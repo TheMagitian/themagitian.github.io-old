@@ -7,13 +7,13 @@ import type {
 import { LinkPreset } from './types/config'
 
 export const siteConfig: SiteConfig = {
-  title: 'Fuwari',
-  subtitle: 'Demo Site',
+  title: 'Magitian',
+  subtitle: 'Blogs',
   lang: 'en',
-  themeHue: 250,
+  themeHue: 260,
   banner: {
     enable: false,
-    src: 'assets/images/demo-banner.png',
+    src: 'assets/images/alien-avatar.png',
   },
 }
 
@@ -24,32 +24,32 @@ export const navBarConfig: NavBarConfig = {
     LinkPreset.About,
     {
       name: 'GitHub',
-      url: 'https://github.com/saicaca/fuwari',
+      url: 'https://github.com/themagitian',
       external: true,
     },
   ],
 }
 
 export const profileConfig: ProfileConfig = {
-  avatar: 'assets/images/demo-avatar.png',
-  name: 'Lorem Ipsum',
-  bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+  avatar: 'assets/images/alien-avatar.png',
+  name: 'Magitian',
+  bio: 'Arch Linux user, writing Rust using Emacs',
   links: [
-    {
-      name: 'Twitter',
-      icon: 'fa6-brands:twitter',
-      url: 'https://twitter.com',
-    },
-    {
-      name: 'Steam',
-      icon: 'fa6-brands:steam',
-      url: 'https://store.steampowered.com',
-    },
     {
       name: 'GitHub',
       icon: 'fa6-brands:github',
-      url: 'https://github.com/saicaca/fuwari',
+      url: 'https://github.com/themagitian',
     },
+	{
+	  name: 'Fosstodon',
+	  icon: 'fa6-brands:mastodon',
+	  url: 'https://fosstodon.org/@magitian@fedia.social'
+	},
+	{
+	  name: 'GitLab',
+	  icon: 'fa6-brands:gitlab',
+	  url: 'https://gitlab.com/magitian'
+	}
   ],
 }
 
