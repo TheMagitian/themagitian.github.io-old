@@ -224,47 +224,49 @@ There are 6 such possible solutions for this board dimension. Given the dimensio
 #include <vector>
 using namespace std;
 
-int m, n, count;
+int m, n;
 
 bool isSafe(int row, int col, vector<vector<int>>& board) {
-  if ((row+1 + col+1) % 3==0) {
-	return false;
-  }
+ if ((row+1 + col+1) % 3==0) {
+    return false;
+ }
 
-  for (int i=0; i<row; i++) {
-	if (board[i][col] == 1) return false;
-  }
-  return true;
+ for (int i=0; i<row; i++) {
+    if (board[i][col] == 1) return false;
+ }
+ return true;
+}
+
+void printBoard(vector<vector<int>>& board) {
+ for (const auto& row : board) {
+    for (int val : row) {
+      cout << val << " ";
+    }
+    cout << endl;
+ }
+ cout << "------------------------" << endl;
 }
 
 void place(int row, vector<vector<int>>& board) {
-  if (row==min(m, n)) {
-	count++;
-	return;
-  }
+ if (row == min(m, n)) {
+    printBoard(board); // Print the board configuration
+    return;
+ }
 
-  for (int col=0; col<n; col++) {
-	if (isSafe(row, col, board)) {
-	  board[row][col] = 1;
-	  place(row+1, board);
-	  board[row][col] = 0; // backtracking
-	}
-  }
-}
-
-int solve(int rows, int cols) {
-  m = rows, n = cols;
-  vector<vector<int>> board(m, vector<int>(n, 0));
-  count = 0;
-  place(0, board);
-  return count;
+ for (int col=0; col<n; col++) {
+    if (isSafe(row, col, board)) {
+      board[row][col] = 1;
+      place(row+1, board);
+      board[row][col] = 0; // backtracking
+    }
+ }
 }
 
 int main() {
-  int m, n;
-  cin >> m >> n;
-  cout << solve(m, n) << endl;
-  return 0;
+ cin >> m >> n;
+ vector<vector<int>> board(m, vector<int>(n, 0));
+ place(0, board);
+ return 0;
 }
 ```
 
