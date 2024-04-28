@@ -285,18 +285,28 @@ Given a set of points in the 2D plane, compute the convex hull of the points.
 
 ## Sample Input:
 6
+
 1 1
+
 2 2
+
 2 4
+
 3 3
+
 4 2
+
 4 4
 
 ## Sample Output:
 1 1
+
 2 2
+
 4 2
+
 4 4
+
 2 4
 
 ## Code:
@@ -684,6 +694,7 @@ int main()
 	return 0;
 }
 ```
+---
 
 # Rabin-Karp - CLRS
 
@@ -769,5 +780,324 @@ int main()
 	// Function Call
 	search(pat, txt, q);
 	return 0;
+}
+```
+
+---
+
+# Longest common subsequence - LCS
+
+## Input:
+- OldSite:GeeksforGeeks.org
+- NewSite:GeeksQuiz.com
+
+## Output:
+Length of Longest Common Substring is 10
+
+Longest Common Substring is: Site:Geeks
+
+## Code:
+```cpp
+#include <iostream>
+#include <string.h>
+using namespace std;
+
+// Function to find the length of the longest common substring
+// and also print the longest common substring
+void LCSubStr(char* X, char* Y, int m, int n) {
+    int LCSuff[m + 1][n + 1];
+    int result = 0; // To store length of the longest common substring
+    int end = 0; // To store the ending index of the longest common substring in X
+
+    // Following steps build LCSuff[m+1][n+1] in bottom up fashion.
+    for (int i = 0; i <= m; i++) 
+    {
+        for (int j = 0; j <= n; j++) 
+        {
+            if (i == 0 || j == 0)
+                LCSuff[i][j] = 0;
+            else if (X[i - 1] == Y[j - 1]) {
+                LCSuff[i][j] = LCSuff[i - 1][j - 1] + 1;
+                if (LCSuff[i][j] > result) {
+                    result = LCSuff[i][j];
+                    end = i - 1; // Update the ending index of the longest common substring
+                }
+            }
+            else
+                LCSuff[i][j] = 0;
+        }
+    }
+
+    // Print the longest common substring
+    cout << "Length of Longest Common Substring is " << result << endl;
+    cout << "Longest Common Substring is: ";
+    for (int i = end - result + 1; i <= end; i++)
+        cout << X[i];
+    cout << endl;
+}
+
+// Driver code
+int main()
+{
+    char X[] = "OldSite:GeeksforGeeks.org";
+    char Y[] = "NewSite:GeeksQuiz.com";
+
+    int m = strlen(X);
+    int n = strlen(Y);
+
+    LCSubStr(X, Y, m, n);
+    return 0;
+}
+```
+---
+
+# Levenshtein algorithm - edit distance between 2 strings
+
+## Input:
+- String _a_
+- String _b_
+
+## Output:
+- Edit distance
+- Steps to edit
+
+```cpp
+#include <iostream>
+#include <cstring>
+#include <algorithm>
+using namespace std;
+
+const int MAX_N = 1000;
+
+// Function to calculate the length of the Longest Common Subsequence (LCS)
+int lcs_length(char X[], char Y[], int n, int m, string& operations)
+{
+    int dp[n + 1][m + 1];
+
+    for (int i = 0; i <= n; i++) {
+        for (int j = 0; j <= m; j++) {
+            if (i == 0 || j == 0)
+                dp[i][j] = 0;
+            else if (X[i - 1] == Y[j - 1])
+                dp[i][j] = 1 + dp[i - 1][j - 1];
+            else
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    // Track the individual operations
+    int i = n, j = m;
+    while (i > 0 && j > 0) {
+        if (X[i - 1] == Y[j - 1]) {
+            i--;
+            j--;
+        } else if (dp[i - 1][j] > dp[i][j - 1]) {
+            operations += "Delete '" + string(1, X[i - 1]) + "' from first string\n";
+            i--;
+        } else {
+            if (dp[i - 1][j - 1] + 1 == dp[i][j]) {
+                operations += "Replace '" + string(1, X[i - 1]) + "' in first string with '" + string(1, Y[j - 1]) + "'\n";
+                i--;
+                j--;
+            } else {
+                operations += "Insert '" + string(1, Y[j - 1]) + "' into first string\n";
+                j--;
+            }
+        }
+    }
+
+    while (i > 0) {
+        operations += "Delete '" + string(1, X[i - 1]) + "' from first string\n";
+        i--;
+    }
+
+    while (j > 0) {
+        operations += "Insert '" + string(1, Y[j - 1]) + "' into first string\n";
+        j--;
+    }
+
+    reverse(operations.end(), operations.begin());
+
+    return dp[n][m];
+}
+
+// Function to calculate Levenshtein Distance
+int levenshtein_distance(char X[], char Y[], int n, int m, string& operations)
+{
+    // Length of LCS
+    int lcs_len = lcs_length(X, Y, n, m, operations);
+
+    // Levenshtein Distance = sum of lengths of both strings - 2 * length of LCS
+    return (n + m - 2 * lcs_len);
+}
+
+// Main function
+int main()
+{
+    char X[] = "kitten";
+    char Y[] = "sitting";
+    int n = strlen(X);
+    int m = strlen(Y);
+
+    // Track the individual operations
+    string operations = "";
+
+    // Calculate Levenshtein Distance and get operations
+    int distance = levenshtein_distance(X, Y, n, m, operations);
+
+    cout << "Levenshtein Distance: " << distance << endl;
+    cout << "Operations to modify string:" << endl << operations;
+
+    return 0;
+}
+```
+
+---
+
+# Maximum sum subarray problem
+
+## Input:
+- Elements of array
+
+## Output:
+- Maximum sum of subarray
+- Subarray which produces max sum
+
+## Code:
+```cpp
+#include <iostream>
+#include <vector>
+#include <limits>
+using namespace std;
+
+// Function to find the maximum sum crossing subarray
+int maxCrossingSum(vector<int>& arr, int low, int mid, int high, int& leftIndex, int& rightIndex) {
+    int leftSum = numeric_limits<int>::min();
+    int rightSum = numeric_limits<int>::min();
+    
+    int sum = 0;
+    int maxLeftIndex = mid;
+    for (int i = mid; i >= low; --i) {
+        sum += arr[i];
+        if (sum > leftSum) {
+            leftSum = sum;
+            maxLeftIndex = i;
+        }
+    }
+    
+    sum = 0;
+    int maxRightIndex = mid + 1;
+    for (int i = mid + 1; i <= high; ++i) {
+        sum += arr[i];
+        if (sum > rightSum) {
+            rightSum = sum;
+            maxRightIndex = i;
+        }
+    }
+    
+    leftIndex = maxLeftIndex;
+    rightIndex = maxRightIndex;
+    
+    return leftSum + rightSum;
+}
+
+// Function to find the maximum sum subarray using divide-and-conquer
+int maxSubarraySum(vector<int>& arr, int low, int high, int& leftIndex, int& rightIndex) {
+    if (low == high) {
+        leftIndex = low;
+        rightIndex = high;
+        return arr[low];
+    }
+    
+    int mid = low + (high - low) / 2;
+    
+    int leftLow, leftHigh, rightLow, rightHigh, crossLow, crossHigh;
+    int leftMax = maxSubarraySum(arr, low, mid, leftLow, leftHigh);
+    int rightMax = maxSubarraySum(arr, mid + 1, high, rightLow, rightHigh);
+    int crossingMax = maxCrossingSum(arr, low, mid, high, crossLow, crossHigh);
+    
+    if (leftMax >= rightMax && leftMax >= crossingMax) {
+        leftIndex = leftLow;
+        rightIndex = leftHigh;
+        return leftMax;
+    } else if (rightMax >= leftMax && rightMax >= crossingMax) {
+        leftIndex = rightLow;
+        rightIndex = rightHigh;
+        return rightMax;
+    } else {
+        leftIndex = crossLow;
+        rightIndex = crossHigh;
+        return crossingMax;
+    }
+}
+
+// Main function
+int main() {
+    vector<int> arr = {2, -3, 4, -1, -2, 1, 5, -3};
+    int n = arr.size();
+    
+    int leftIndex, rightIndex;
+    int maxSum = maxSubarraySum(arr, 0, n - 1, leftIndex, rightIndex);
+    
+    cout << "Maximum sum subarray: ";
+    for (int i = leftIndex; i <= rightIndex; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+    
+    cout << "Sum of maximum sum subarray: " << maxSum << endl;
+    
+    return 0;
+}
+```
+
+## Code (Kadane):
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Function to find the maximum sum subarray using Kadane's algorithm
+int maxSubarraySum(vector<int>& arr, int& leftIndex, int& rightIndex) {
+    int maxSum = arr[0];
+    int currentSum = arr[0];
+    leftIndex = 0;
+    int tempIndex = 0;
+
+    for (int i = 1; i < arr.size(); ++i) {
+        if (arr[i] > currentSum + arr[i]) {
+            currentSum = arr[i];
+            tempIndex = i;
+        } else {
+            currentSum += arr[i];
+        }
+
+        if (currentSum > maxSum) {
+            maxSum = currentSum;
+            leftIndex = tempIndex;
+            rightIndex = i;
+        }
+    }
+
+    return maxSum;
+}
+
+// Main function
+int main() {
+    vector<int> arr = {2, -3, 4, -1, -2, 1, 5, -3};
+    int n = arr.size();
+    
+    int leftIndex, rightIndex;
+    int maxSum = maxSubarraySum(arr, leftIndex, rightIndex);
+    
+    cout << "Maximum sum subarray: ";
+    for (int i = leftIndex; i <= rightIndex; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+    
+    cout << "Sum of maximum sum subarray: " << maxSum << endl;
+    
+    return 0;
 }
 ```
