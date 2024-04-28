@@ -1101,3 +1101,113 @@ int main() {
     return 0;
 }
 ```
+
+---
+
+# Matrix Chain multiplication
+
+## Code:
+```cpp
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+void printParentheses(vector<vector<int>>& bracket, int i, int j, char& name) {
+    if (i == j) {
+        cout << name++;
+        return;
+    }
+    cout << "(";
+    printParentheses(bracket, i, bracket[i][j], name);
+    printParentheses(bracket, bracket[i][j] + 1, j, name);
+    cout << ")";
+}
+
+void matrixChainOrder(vector<pair<int, int>>& matrices) {
+    int n = matrices.size();
+    vector<vector<int>> dp(n, vector<int>(n, INT_MAX));
+    vector<vector<int>> bracket(n, vector<int>(n, -1));
+    for (int i = 1; i < n; ++i) dp[i][i] = 0;
+    for (int len = 2; len < n; ++len) {
+        for (int i = 1; i < n - len + 1; ++i) {
+            int j = i + len - 1;
+            for (int k = i; k < j; ++k) {
+                int cost = dp[i][k] + dp[k + 1][j] + matrices[i - 1].first * matrices[k].second * matrices[j].second;
+                if (cost < dp[i][j]) {
+                    dp[i][j] = cost;
+                    bracket[i][j] = k;
+                }
+            }
+        }
+    }
+    cout << "Minimum number of scalar multiplications: " << dp[1][n - 1] << endl;
+    cout << "Order of multiplication: ";
+    char name = 'A';
+    printParentheses(bracket, 1, n - 1, name);
+    cout << endl;
+}
+
+int main() {
+    vector<pair<int, int>> matrices = {{30, 35}, {35, 15}, {15, 5}, {5, 10}, {10, 20}, {20, 25}};
+    matrixChainOrder(matrices);
+    return 0;
+}
+```
+
+---
+
+# Subset Sum problem
+Given a set of non-negative integers and a value sum, the task is to check if there is a subset of the given set whose sum is equal to the given sum. 
+
+## Code:
+```cpp
+// A Dynamic Programming solution
+// for subset sum problem
+#include <bits/stdc++.h>
+using namespace std;
+
+// Returns true if there is a subset of set[]
+// with sum equal to given sum
+bool isSubsetSum(int set[], int n, int sum)
+{
+    // The value of subset[i][j] will be true if
+    // there is a subset of set[0..j-1] with sum
+    // equal to i
+    bool subset[n + 1][sum + 1];
+
+    // If sum is 0, then answer is true
+    for (int i = 0; i <= n; i++)
+        subset[i][0] = true;
+
+    // If sum is not 0 and set is empty,
+    // then answer is false
+    for (int i = 1; i <= sum; i++)
+        subset[0][i] = false;
+
+    // Fill the subset table in bottom up manner
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= sum; j++) {
+            if (j < set[i - 1])
+                subset[i][j] = subset[i - 1][j];
+            if (j >= set[i - 1])
+                subset[i][j] = subset[i - 1][j] || subset[i - 1][j - set[i - 1]];
+        }
+    }
+
+    return subset[n][sum];
+}
+
+// Driver code
+int main()
+{
+    int set[] = { 3, 34, 4, 12, 5, 2 };
+    int sum = 9;
+    int n = sizeof(set) / sizeof(set[0]);
+    if (isSubsetSum(set, n, sum) == true)
+        cout << "Found a subset with given sum";
+    else
+        cout << "No subset with given sum";
+    return 0;
+}
+```
