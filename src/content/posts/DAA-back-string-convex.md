@@ -1288,3 +1288,579 @@ int main()
 	return 0;
 }
 ```
+
+---
+
+# Graph colouring problem
+Graph coloring refers to the problem of coloring vertices of a graph in such a way that no two adjacent vertices have the same color. This is also called the vertex coloring problem. If coloring is done using at most m colors, it is called m-coloring.
+
+## Code:
+```cpp
+// C++ program for solution of M
+// Coloring problem using backtracking
+
+#include <bits/stdc++.h>
+using namespace std;
+
+// Number of vertices in the graph
+#define V 4
+
+void printSolution(int color[]);
+
+/* A utility function to check if
+   the current color assignment
+   is safe for vertex v i.e. checks
+   whether the edge exists or not
+   (i.e, graph[v][i]==1). If exist
+   then checks whether the color to
+   be filled in the new vertex(c is
+   sent in the parameter) is already
+   used by its adjacent
+   vertices(i-->adj vertices) or
+   not (i.e, color[i]==c) */
+bool isSafe(int v, bool graph[V][V], int color[], int c)
+{
+    for (int i = 0; i < V; i++)
+        if (graph[v][i] && c == color[i])
+            return false;
+
+    return true;
+}
+
+/* A recursive utility function
+to solve m coloring problem */
+bool graphColoringUtil(bool graph[V][V], int m, int color[],
+                       int v)
+{
+
+    /* base case: If all vertices are
+       assigned a color then return true */
+    if (v == V)
+        return true;
+
+    /* Consider this vertex v and
+       try different colors */
+    for (int c = 1; c <= m; c++) {
+
+        /* Check if assignment of color
+           c to v is fine*/
+        if (isSafe(v, graph, color, c)) {
+            color[v] = c;
+
+            /* recur to assign colors to
+               rest of the vertices */
+            if (graphColoringUtil(graph, m, color, v + 1)
+                == true)
+                return true;
+
+            /* If assigning color c doesn't
+               lead to a solution then remove it */
+            color[v] = 0;
+        }
+    }
+
+    /* If no color can be assigned to
+       this vertex then return false */
+    return false;
+}
+
+/* This function solves the m Coloring
+   problem using Backtracking. It mainly
+   uses graphColoringUtil() to solve the
+   problem. It returns false if the m
+   colors cannot be assigned, otherwise
+   return true and prints assignments of
+   colors to all vertices. Please note
+   that there may be more than one solutions,
+   this function prints one of the
+   feasible solutions.*/
+bool graphColoring(bool graph[V][V], int m)
+{
+
+    // Initialize all color values as 0.
+    // This initialization is needed
+    // correct functioning of isSafe()
+    int color[V];
+    for (int i = 0; i < V; i++)
+        color[i] = 0;
+
+    // Call graphColoringUtil() for vertex 0
+    if (graphColoringUtil(graph, m, color, 0) == false) {
+        cout << "Solution does not exist";
+        return false;
+    }
+
+    // Print the solution
+    printSolution(color);
+    return true;
+}
+
+/* A utility function to print solution */
+void printSolution(int color[])
+{
+    cout << "Solution Exists:"
+         << " Following are the assigned colors"
+         << "\n";
+    for (int i = 0; i < V; i++)
+        cout << " " << color[i] << " ";
+
+    cout << "\n";
+}
+
+// Driver code
+int main()
+{
+
+    /* Create following graph and test
+       whether it is 3 colorable
+      (3)---(2)
+       |   / |
+       |  /  |
+       | /   |
+      (0)---(1)
+    */
+    bool graph[V][V] = {
+        { 0, 1, 1, 1 },
+        { 1, 0, 1, 0 },
+        { 1, 1, 0, 1 },
+        { 1, 0, 1, 0 },
+    };
+
+    // Number of colors
+    int m = 3;
+
+    // Function call
+    graphColoring(graph, m);
+    return 0;
+}
+```
+
+# M-colouring problem
+Given an undirected graph and a number m, the task is to color the given graph with at most m colors such that no two adjacent vertices of the graph are colored with the same color
+
+Note: Here coloring of a graph means the assignment of colors to all vertices
+
+## Code:
+```cpp
+// C++ program for solution of M
+// Coloring problem using backtracking
+
+#include <bits/stdc++.h>
+using namespace std;
+
+// Number of vertices in the graph
+#define V 4
+
+void printSolution(int color[]);
+
+/* A utility function to check if
+the current color assignment
+is safe for vertex v i.e. checks
+whether the edge exists or not
+(i.e, graph[v][i]==1). If exist
+then checks whether the color to
+be filled in the new vertex(c is
+sent in the parameter) is already
+used by its adjacent
+vertices(i-->adj vertices) or
+not (i.e, color[i]==c) */
+bool isSafe(int v, bool graph[V][V], int color[], int c)
+{
+	for (int i = 0; i < V; i++)
+		if (graph[v][i] && c == color[i])
+			return false;
+
+	return true;
+}
+
+/* A recursive utility function
+to solve m coloring problem */
+bool graphColoringUtil(bool graph[V][V], int m, int color[],
+					int v)
+{
+
+	/* base case: If all vertices are
+	assigned a color then return true */
+	if (v == V)
+		return true;
+
+	/* Consider this vertex v and
+	try different colors */
+	for (int c = 1; c <= m; c++) {
+
+		/* Check if assignment of color
+		c to v is fine*/
+		if (isSafe(v, graph, color, c)) {
+			color[v] = c;
+
+			/* recur to assign colors to
+			rest of the vertices */
+			if (graphColoringUtil(graph, m, color, v + 1)
+				== true)
+				return true;
+
+			/* If assigning color c doesn't
+			lead to a solution then remove it */
+			color[v] = 0;
+		}
+	}
+
+	/* If no color can be assigned to
+	this vertex then return false */
+	return false;
+}
+
+/* This function solves the m Coloring
+problem using Backtracking. It mainly
+uses graphColoringUtil() to solve the
+problem. It returns false if the m
+colors cannot be assigned, otherwise
+return true and prints assignments of
+colors to all vertices. Please note
+that there may be more than one solutions,
+this function prints one of the
+feasible solutions.*/
+bool graphColoring(bool graph[V][V], int m)
+{
+
+	// Initialize all color values as 0.
+	// This initialization is needed
+	// correct functioning of isSafe()
+	int color[V];
+	for (int i = 0; i < V; i++)
+		color[i] = 0;
+
+	// Call graphColoringUtil() for vertex 0
+	if (graphColoringUtil(graph, m, color, 0) == false) {
+		cout << "Solution does not exist";
+		return false;
+	}
+
+	// Print the solution
+	printSolution(color);
+	return true;
+}
+
+/* A utility function to print solution */
+void printSolution(int color[])
+{
+	cout << "Solution Exists:"
+		<< " Following are the assigned colors"
+		<< "\n";
+	for (int i = 0; i < V; i++)
+		cout << " " << color[i] << " ";
+
+	cout << "\n";
+}
+
+// Driver code
+int main()
+{
+
+	/* Create following graph and test
+	whether it is 3 colorable
+	(3)---(2)
+	| / |
+	| / |
+	| / |
+	(0)---(1)
+	*/
+	bool graph[V][V] = {
+		{ 0, 1, 1, 1 },
+		{ 1, 0, 1, 0 },
+		{ 1, 1, 0, 1 },
+		{ 1, 0, 1, 0 },
+	};
+
+	// Number of colors
+	int m = 3;
+
+	// Function call
+	graphColoring(graph, m);
+	return 0;
+}
+
+// This code is contributed by Shivani
+```
+
+---
+
+# Hamiltonian Cycle
+Hamiltonian Cycle or Circuit in a graph G is a cycle that visits every vertex of G exactly once and returns to the starting vertex. If graph contains a Hamiltonian cycle, it is called Hamiltonian graph otherwise it is non-Hamiltonian. Finding a Hamiltonian Cycle in a graph is a well-known NP-complete problem, which means that there’s no known efficient algorithm to solve it for all types of graphs. However, it can be solved for small or specific types of graphs. The Hamiltonian Cycle problem has practical applications in various fields, such as logistics, network design, and computer science.
+
+## Code:
+```cpp
+/* C++ program for solution of Hamiltonian 
+Cycle problem using backtracking */
+#include <bits/stdc++.h>
+using namespace std;
+
+// Number of vertices in the graph 
+#define V 5 
+
+void printSolution(int path[]); 
+
+/* A utility function to check if 
+the vertex v can be added at index 'pos' 
+in the Hamiltonian Cycle constructed 
+so far (stored in 'path[]') */
+bool isSafe(int v, bool graph[V][V], 
+			int path[], int pos) 
+{ 
+	/* Check if this vertex is an adjacent 
+	vertex of the previously added vertex. */
+	if (graph [path[pos - 1]][ v ] == 0) 
+		return false; 
+
+	/* Check if the vertex has already been included. 
+	This step can be optimized by creating
+	an array of size V */
+	for (int i = 0; i < pos; i++) 
+		if (path[i] == v) 
+			return false; 
+
+	return true; 
+} 
+
+/* A recursive utility function 
+to solve hamiltonian cycle problem */
+bool hamCycleUtil(bool graph[V][V], 
+				int path[], int pos) 
+{ 
+	/* base case: If all vertices are 
+	included in Hamiltonian Cycle */
+	if (pos == V) 
+	{ 
+		// And if there is an edge from the 
+		// last included vertex to the first vertex 
+		if (graph[path[pos - 1]][path[0]] == 1) 
+			return true; 
+		else
+			return false; 
+	} 
+
+	// Try different vertices as a next candidate 
+	// in Hamiltonian Cycle. We don't try for 0 as 
+	// we included 0 as starting point in hamCycle() 
+	for (int v = 1; v < V; v++) 
+	{ 
+		/* Check if this vertex can be added 
+		// to Hamiltonian Cycle */
+		if (isSafe(v, graph, path, pos)) 
+		{ 
+			path[pos] = v; 
+
+			/* recur to construct rest of the path */
+			if (hamCycleUtil (graph, path, pos + 1) == true) 
+				return true; 
+
+			/* If adding vertex v doesn't lead to a solution, 
+			then remove it */
+			path[pos] = -1; 
+		} 
+	} 
+
+	/* If no vertex can be added to 
+	Hamiltonian Cycle constructed so far, 
+	then return false */
+	return false; 
+} 
+
+/* This function solves the Hamiltonian Cycle problem 
+using Backtracking. It mainly uses hamCycleUtil() to 
+solve the problem. It returns false if there is no 
+Hamiltonian Cycle possible, otherwise return true 
+and prints the path. Please note that there may be 
+more than one solutions, this function prints one 
+of the feasible solutions. */
+bool hamCycle(bool graph[V][V]) 
+{ 
+	int *path = new int[V]; 
+	for (int i = 0; i < V; i++) 
+		path[i] = -1; 
+
+	/* Let us put vertex 0 as the first vertex in the path.
+	If there is a Hamiltonian Cycle, then the path can be 
+	started from any point of the cycle as the graph is undirected */
+	path[0] = 0; 
+	if (hamCycleUtil(graph, path, 1) == false ) 
+	{ 
+		cout << "\nSolution does not exist"; 
+		return false; 
+	} 
+
+	printSolution(path); 
+	return true; 
+} 
+
+/* A utility function to print solution */
+void printSolution(int path[]) 
+{ 
+	cout << "Solution Exists:"
+			" Following is one Hamiltonian Cycle \n"; 
+	for (int i = 0; i < V; i++) 
+		cout << path[i] << " "; 
+
+	// Let us print the first vertex again
+	// to show the complete cycle 
+	cout << path[0] << " "; 
+	cout << endl;
+} 
+
+// Driver Code 
+int main() 
+{ 
+	/* Let us create the following graph 
+		(0)--(1)--(2) 
+		|	 / \ | 
+		| /	 \ | 
+		| /	 \ | 
+		(3)-------(4) */
+	bool graph1[V][V] = {{0, 1, 0, 1, 0}, 
+						{1, 0, 1, 1, 1}, 
+						{0, 1, 0, 0, 1}, 
+						{1, 1, 0, 0, 1}, 
+						{0, 1, 1, 1, 0}}; 
+	
+	// Print the solution 
+	hamCycle(graph1); 
+	
+	/* Let us create the following graph 
+		(0)--(1)--(2) 
+		|	 / \ | 
+		| /	 \ | 
+		| /	 \ | 
+		(3)	 (4) */
+	bool graph2[V][V] = {{0, 1, 0, 1, 0}, 
+						{1, 0, 1, 1, 1}, 
+						{0, 1, 0, 0, 1}, 
+						{1, 1, 0, 0, 0}, 
+						{0, 1, 1, 0, 0}}; 
+
+	// Print the solution 
+	hamCycle(graph2); 
+
+	return 0; 
+} 
+
+// This is code is contributed by rathbhupendra
+```
+
+# Huffman Encoding
+
+## Code:
+```cpp
+// C++(STL) program for Huffman Coding with STL 
+#include <bits/stdc++.h> 
+using namespace std; 
+
+// A Huffman tree node 
+struct MinHeapNode { 
+
+	// One of the input characters 
+	char data; 
+
+	// Frequency of the character 
+	unsigned freq; 
+
+	// Left and right child 
+	MinHeapNode *left, *right; 
+
+	MinHeapNode(char data, unsigned freq) 
+
+	{ 
+
+		left = right = NULL; 
+		this->data = data; 
+		this->freq = freq; 
+	} 
+}; 
+
+// For comparison of 
+// two heap nodes (needed in min heap) 
+struct compare { 
+
+	bool operator()(MinHeapNode* l, MinHeapNode* r) 
+
+	{ 
+		return (l->freq > r->freq); 
+	} 
+}; 
+
+// Prints huffman codes from 
+// the root of Huffman Tree. 
+void printCodes(struct MinHeapNode* root, string str) 
+{ 
+
+	if (!root) 
+		return; 
+
+	if (root->data != '$') 
+		cout << root->data << ": " << str << "\n"; 
+
+	printCodes(root->left, str + "0"); 
+	printCodes(root->right, str + "1"); 
+} 
+
+// The main function that builds a Huffman Tree and 
+// print codes by traversing the built Huffman Tree 
+void HuffmanCodes(char data[], int freq[], int size) 
+{ 
+	struct MinHeapNode *left, *right, *top; 
+
+	// Create a min heap & inserts all characters of data[] 
+	priority_queue<MinHeapNode*, vector<MinHeapNode*>, 
+				compare> 
+		minHeap; 
+
+	for (int i = 0; i < size; ++i) 
+		minHeap.push(new MinHeapNode(data[i], freq[i])); 
+
+	// Iterate while size of heap doesn't become 1 
+	while (minHeap.size() != 1) { 
+
+		// Extract the two minimum 
+		// freq items from min heap 
+		left = minHeap.top(); 
+		minHeap.pop(); 
+
+		right = minHeap.top(); 
+		minHeap.pop(); 
+
+		// Create a new internal node with 
+		// frequency equal to the sum of the 
+		// two nodes frequencies. Make the 
+		// two extracted node as left and right children 
+		// of this new node. Add this node 
+		// to the min heap '$' is a special value 
+		// for internal nodes, not used 
+		top = new MinHeapNode('$', 
+							left->freq + right->freq); 
+
+		top->left = left; 
+		top->right = right; 
+
+		minHeap.push(top); 
+	} 
+
+	// Print Huffman codes using 
+	// the Huffman tree built above 
+	printCodes(minHeap.top(), ""); 
+} 
+
+// Driver Code 
+int main() 
+{ 
+
+	char arr[] = { 'a', 'b', 'c', 'd', 'e', 'f' }; 
+	int freq[] = { 5, 9, 12, 13, 16, 45 }; 
+
+	int size = sizeof(arr) / sizeof(arr[0]); 
+
+	HuffmanCodes(arr, freq, size); 
+
+	return 0; 
+} 
+
+// This code is contributed by Aditya Goel
+```
