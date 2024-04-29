@@ -1864,3 +1864,106 @@ int main()
 
 // This code is contributed by Aditya Goel
 ```
+
+---
+
+# Longest increasing subsequence
+## Code:
+```cpp
+// Dynamic Programming C++ implementation
+// of LIS problem
+#include <bits/stdc++.h>
+using namespace std;
+
+// lis() returns the length of the longest
+// increasing subsequence in arr[] of size n
+int lis(int arr[], int n)
+{
+	int lis[n];
+
+	lis[0] = 1;
+
+	// Compute optimized LIS values in
+	// bottom up manner
+	for (int i = 1; i < n; i++) {
+		lis[i] = 1;
+		for (int j = 0; j < i; j++)
+			if (arr[i] > arr[j] && lis[i] < lis[j] + 1)
+				lis[i] = lis[j] + 1;
+	}
+
+	// Return maximum value in lis[]
+	return *max_element(lis, lis + n);
+}
+
+// Driver program to test above function
+int main()
+{
+	int arr[] = { 10, 22, 9, 33, 21, 50, 41, 60 };
+	int n = sizeof(arr) / sizeof(arr[0]);
+
+	// Function call
+	printf("Length of lis is %d\n", lis(arr, n));
+	return 0;
+}
+```
+
+# Activity selection - minimum number of time slots
+Given a set of activities, each with a start time and a finish time, the goal is to find the minimum number of time slots needed to accommodate all the activities. Activities may overlap, but you can't perform two activities simultaneously in the same slot.
+
+## Input:
+- A set of activities represented as a vector of pairs, where each pair consists of a start time and a finish time.
+
+## Output:
+- An integer representing the minimum number of time slots needed to accommodate all activities.
+
+## Code:
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Structure to represent an activity
+struct Activity {
+    int start, finish;
+};
+
+// Function to compare activities based on their finish time
+bool activityCompare(const Activity& a, const Activity& b) {
+    return (a.finish < b.finish);
+}
+
+// Function to find the minimum number of slots needed
+int findMinimumSlots(vector<Activity>& activities) {
+    // Sort activities based on their finish times
+    sort(activities.begin(), activities.end(), activityCompare);
+
+    int slots = 1; // Initialize the number of slots needed
+    int last_finish_time = activities[0].finish;
+
+    // Iterate through the activities
+    for (int i = 1; i < activities.size(); i++) {
+        // If the current activity's start time is after the last activity's finish time,
+        // then it can be accommodated in the same slot
+        if (activities[i].start >= last_finish_time) {
+            last_finish_time = activities[i].finish; // Update last finish time
+        } else {
+            // If the current activity overlaps with the previous one,
+            // then it needs a new slot
+            slots++;
+        }
+    }
+
+    return slots;
+}
+
+int main() {
+    // Example usage
+    vector<Activity> activities = {{1, 2}, {2, 3}, {3, 4}, {1, 3}};
+    int minSlots = findMinimumSlots(activities);
+    cout << "Minimum number of slots needed: " << minSlots << endl;
+    return 0;
+}
+```
