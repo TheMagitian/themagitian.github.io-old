@@ -7,7 +7,7 @@ import type {
 import { LinkPreset } from './types/config'
 
 export const siteConfig: SiteConfig = {
-  title: 'Magitian',
+  title: 'Srinath Anand',
   subtitle: 'Blogs',
   lang: 'en',
   themeHue: 260,
@@ -32,8 +32,8 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
   avatar: 'assets/images/alien-avatar.png',
-  name: 'Magitian',
-  bio: 'Arch Linux user, writing Rust using Emacs',
+  name: 'Srinath Anand',
+  bio: 'Arch Linux user, writing Rust using Emacs.',
   links: [
     {
       name: 'GitHub',
@@ -49,7 +49,12 @@ export const profileConfig: ProfileConfig = {
 	  name: 'GitLab',
 	  icon: 'fa6-brands:gitlab',
 	  url: 'https://gitlab.com/magitian'
-	}
+	},
+	{
+	  name: 'LinkedIn',
+	  icon: 'fa6-brands:linkedin',
+	  url: 'https://linkedin.com/srinath-anand'
+	},
   ],
 }
 
