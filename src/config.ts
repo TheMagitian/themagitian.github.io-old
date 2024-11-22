@@ -40,11 +40,13 @@ export const profileConfig: ProfileConfig = {
       icon: 'fa6-brands:github',
       url: 'https://github.com/themagitian',
     },
-	{
+	{ /* 
+  {
 	  name: 'IceShrimp',
 	  icon: 'fa6-brands:mastodon',
 	  url: 'https://fedia.social/@magitian?rel="me"'
 	},
+  */ }
 	{
 	  name: 'GitLab',
 	  icon: 'fa6-brands:gitlab',
