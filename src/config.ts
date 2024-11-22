@@ -43,7 +43,7 @@ export const profileConfig: ProfileConfig = {
 	{
 	  name: 'Fosstodon',
 	  icon: 'fa6-brands:mastodon',
-	  url: 'https://fosstodon.org/@magitian@fedia.social'
+	  url: 'https://fedia.social/@magitian'
 	},
 	{
 	  name: 'GitLab',
