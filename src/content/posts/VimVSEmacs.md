@@ -137,4 +137,4 @@ Both editors have their strengths and unique features that can greatly enhance a
 - [Banner image - Unkertmedia.com](https://unkertmedia.com/wp-content/uploads/2022/04/vim-vs-emacs-1024x576.png)
 
 
-<a href="https://fedia.social/@magitian" rel="me" target="_blank"> Follow me on the fediverse for similar content! </a>
+<a rel="me" href="https://fedia.social/@magitian"></a>
