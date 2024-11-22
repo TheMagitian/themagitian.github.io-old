@@ -41,9 +41,9 @@ export const profileConfig: ProfileConfig = {
       url: 'https://github.com/themagitian',
     },
 	{
-	  name: 'Fosstodon',
+	  name: 'IceShrimp',
 	  icon: 'fa6-brands:mastodon',
-	  url: 'https://fedia.social/@magitian'
+	  url: 'https://fedia.social/@magitian?rel="me"'
 	},
 	{
 	  name: 'GitLab',
