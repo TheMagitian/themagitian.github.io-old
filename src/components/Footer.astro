@@ -1,19 +1,20 @@
 ---
-
 import {profileConfig} from "../config";
-
 ---
 
-<div class="card-base max-w-[var(--page-width)] min-h-[4.5rem] rounded-b-none mx-auto flex items-center px-6">
-    <div class="transition text-50 text-sm">
-        <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring/magitian/previous">⟵</a>
-        <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring">Circle of VITians</a>
-        <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring/magitian/next">⟶</a>
-    </div>
-
-    <div class="transition text-50 text-sm">
-        © 2025 {profileConfig.name}. All Rights Reserved.
-        <br>
-        Powered by <a class="link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">Fuwari</a>
-    </div>
-</div>
+<footer class="card-base max-w-[var(--page-width)] min-h-[4.5rem] rounded-b-none mx-auto flex flex-col md:flex-row items-center justify-between gap-2 px-6 py-3 text-50 text-sm">
+  <nav class="flex items-center gap-2">
+    <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring/magitian/previous" aria-label="Previous site in webring">⟵</a>
+    <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring">Circle of VITians</a>
+    <a class="link text-[var(--primary)] font-medium" href="https://404salad.github.io/webring/magitian/next" aria-label="Next site in webring">⟶</a>
+  </nav>
+  <span class="hidden md:block mx-3 text-black/20 dark:text-white/20">|</span>
+  <div class="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-right">
+    <span>© 2025 {profileConfig.name}. All Rights Reserved.</span>
+    <span class="hidden md:inline">•</span>
+    <span>
+      Powered by
+      <a class="link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/saicaca/fuwari">Fuwari</a>
+    </span>
+  </div>
+</footer>
