@@ -1,6 +1,6 @@
 ---
 title: "Portfolio"
-published: 2024-08-04
+published: 2024-10-06
 author: Srinath Anand
 category: "Portfolio"
 tags: [Personal, Portfolio]
@@ -26,19 +26,19 @@ draft: false
 
 | Institution                                                           | Academic Term | Course             | Grade      |
 |-----------------------------------------------------------------------|---------------|--------------------|------------|
-| [Vellore Institute of Technology, Chennai](https://chennai.vit.ac.in) | 2022-26       | B. Tech CSE (Core) | CGPA: 8.71 |
+| [Vellore Institute of Technology, Chennai](https://chennai.vit.ac.in) | 2022-26       | B. Tech CSE (Core) | CGPA: 8.82 |
 | [National Public School, Gopalapuram](https://npschennai.com)         | 2010-22       | AISSCE             | 94.2%      |
-| [National Public School, Gopalapuram](https://npschennai.com)         | 2010-22       | AISSE              | 94%        |
+| [National Public School, Gopalapuram](https://npschennai.com)         | 2010-22       | AISSE              | 94.4%      |
 
 -----
 ## <u>PROJECTS</u>
 
-### [StratOS Linux](https://stratos-linux.github.io): 
+### [StratOS Linux](https://stratos-linux.org): 
 
 > A GNU/Linux _distribution_ based on [Arch Linux](https://archlinux.org). It provides access to
 > the *largest set* of repositories of software available on _any_ Linux distribution.
 > My twin (and fellow VITian) Srikanth and I **develop** the distribution and <u>maintain
-> the package repository</u>, fixing bugs in the distribution.
+> the package repository</u>, fixing bugs in the distribution. I am the lead developer of the GNOME and Niri spins.
 
 ![](../../assets/images/Portfolio/StratOS.jpg)
 
@@ -48,6 +48,9 @@ draft: false
 
 ![](../../assets/images/Portfolio/Rockers.jpg)
 ![](../../assets/images/Portfolio/Rockers2.jpg)
+
+## [Xoxo](https://gitlab.com/magitian/xoxo)
+> Simple symmetric cryptographic algorithm implemented in Rust, accompanied by server and client binaries for message exchange.
 
 ### Smart Planner:
 > A **voice assistant** we worked on as a team to aid with <u>calendar-

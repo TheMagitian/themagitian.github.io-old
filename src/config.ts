@@ -50,6 +50,11 @@ export const profileConfig: ProfileConfig = {
 	  icon: 'fa6-brands:linkedin',
 	  url: 'https://linkedin.com/srinath-anand'
 	},
+  {
+	  name: 'Fediverse',
+	  icon: 'fa6-brands:mastodon',
+	  url: 'https://fedia.social/@magitian'
+	},
   ],
 }
 
