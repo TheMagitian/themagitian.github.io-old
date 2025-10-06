@@ -1,6 +1,6 @@
 ---
 title: "Portfolio"
-published: 2024-10-06
+published: 2025-10-06
 author: Srinath Anand
 category: "Portfolio"
 tags: [Personal, Portfolio]
