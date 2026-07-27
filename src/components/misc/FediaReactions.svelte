@@ -19,6 +19,14 @@ interface Reaction {
   static_url: string | null
 }
 
+interface MediaAttachment {
+  id: string
+  type: string
+  url: string
+  preview_url: string
+  description: string | null
+}
+
 interface Status {
   id: string
   content: string
@@ -28,6 +36,7 @@ interface Status {
   reblogs_count: number
   replies_count: number
   reactions: Reaction[]
+  media_attachments: MediaAttachment[]
 }
 
 let loading = false
@@ -212,6 +221,17 @@ function fmtDate(iso: string): string {
                       <span class="fedia-reply-date">{fmtDate(reply.created_at)}</span>
                     </div>
                     <div class="fedia-reply-content">{@html reply.content}</div>
+                    {#if reply.media_attachments?.length}
+                      <div class="fedia-reply-media">
+                        {#each reply.media_attachments as media}
+                          {#if media.type === 'image' || media.type === 'gifv'}
+                            <img class="fedia-reply-img" src={media.url} alt={media.description || ''} loading="lazy" />
+                          {:else if media.type === 'video'}
+                            <video class="fedia-reply-img" src={media.url} controls />
+                          {/if}
+                        {/each}
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
@@ -397,6 +417,20 @@ function fmtDate(iso: string): string {
     text-decoration: underline
     text-decoration-style: dashed
     text-underline-offset: 0.15rem
+
+.fedia-reply-media
+  margin-top: 0.375rem
+  margin-left: 2.25rem
+  display: flex
+  flex-direction: column
+  gap: 0.375rem
+
+.fedia-reply-img
+  max-width: 100%
+  max-height: 20rem
+  object-fit: contain
+  border-radius: 0.5rem
+  background: #000
 
 .fedia-user-list
   display: flex
