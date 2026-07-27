@@ -1,0 +1,20 @@
+---
+title: ActivityPub Testbed
+published: 2026-07-27
+description: Test page for ActivityPub features
+tags: [Mastodon, Iceshrimp, Activitypub]
+keywords: [Fediverse]
+category: Fediverse
+draft: true
+---
+
+{/* Imports */}
+import Fedia from "@components/misc/Fedia.astro";
+import FediaReactions from "@components/misc/FediaReactions.svelte";
+
+<Fedia url="https://fedia.social/notes/aopxf4mdvqdsljut" />
+
+<FediaReactions url="https://fedia.social/notes/aopxf4mdvqdsljut" client:load />
+
+<Fedia url="https://fedia.social/notes/amyyvqxhjrj0ab4q" />
+<FediaReactions url="https://fedia.social/notes/amyyvqxhjrj0ab4q" client:load />

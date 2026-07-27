@@ -112,6 +112,7 @@ const contentWarning = post?.summary || "";
 <div class:list={["fedia-embed not-prose", className]}>
   {post ? (
     <div class="fedia-card">
+      <img class="fedia-favicon" src="https://fedia.social/favicon.ico" alt="" width="24" height="24" loading="lazy" />
       <div class="fedia-card-header">
         {authorAvatar && (
           <img
@@ -138,6 +139,16 @@ const contentWarning = post?.summary || "";
             <span class="fedia-handle text-50">{authorHandle}</span>
           )}
         </div>
+        {authorUrl && (
+          <a
+            class="fedia-follow-btn"
+            href={authorUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Follow
+          </a>
+        )}
       </div>
 
       {isSensitive && contentWarning && (
@@ -154,6 +165,8 @@ const contentWarning = post?.summary || "";
         </div>
       )}
 
+      {/* NOTE: these lines are redundant, as post.content contains the hashtags too. */}
+      {/* 
       {hashtags.length > 0 && (
         <div class="fedia-hashtags">
           {hashtags.map((tag) => (
@@ -168,6 +181,7 @@ const contentWarning = post?.summary || "";
           ))}
         </div>
       )}
+      */}
 
       {publishedDate && (
         <a
@@ -193,6 +207,7 @@ const contentWarning = post?.summary || "";
     </div>
   ) : (
     <div class="fedia-card fedia-card--error">
+      <img class="fedia-favicon" src="https://fedia.social/favicon.ico" alt="" width="24" height="24" loading="lazy" />
       <div class="fedia-error-body">
         <a
           href={url}
@@ -214,6 +229,7 @@ const contentWarning = post?.summary || "";
     line-height: 1.5
 
   .fedia-card
+    position: relative
     border: 1px solid var(--line-divider)
     border-radius: 0.75rem
     overflow: hidden
@@ -338,7 +354,31 @@ const contentWarning = post?.summary || "";
     &:hover
       text-decoration: underline
 
+  .fedia-favicon
+    position: absolute
+    top: 0.75rem
+    right: 0.75rem
+    width: 24px
+    height: 24px
+    border-radius: 4px
+    z-index: 1
+
+  .fedia-follow-btn
+    padding: 0.25rem 0.75rem
+    font-size: 0.8125rem
+    font-weight: 500
+    color: var(--primary)
+    background: var(--btn-regular-bg)
+    border: 1px solid var(--line-divider)
+    border-radius: 0.375rem
+    text-decoration: none
+    white-space: nowrap
+    transition: background 0.15s
+    &:hover
+      background: var(--btn-plain-bg-hover)
+
   .fedia-card--error
+    position: relative
     padding: 1.25rem
     text-align: center
 
