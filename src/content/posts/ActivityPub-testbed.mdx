@@ -5,19 +5,29 @@ description: Test page for ActivityPub features
 tags: [Mastodon, Iceshrimp, Activitypub]
 keywords: [Fediverse]
 category: Fediverse
-draft: true
+draft: false
 ---
+
+# Purpose
+This *volatile* webpage is for testing ActivityPub-related features in the website. It might be removed in the future.
+
 
 {/* Imports */}
 import Fedia from "@components/misc/Fedia.astro";
 import FediaReactions from "@components/misc/FediaReactions.svelte";
 
+## Plain post with hashtags
 <Fedia url="https://fedia.social/notes/aopxf4mdvqdsljut" />
-
 <FediaReactions url="https://fedia.social/notes/aopxf4mdvqdsljut" client:load />
 
+## Post with an attachment (image)
 <Fedia url="https://fedia.social/notes/amyyvqxhjrj0ab4q" />
 <FediaReactions url="https://fedia.social/notes/amyyvqxhjrj0ab4q" client:load />
 
+## Post with rich text (Markdown)
+<Fedia url="https://fedia.social/notes/aagw1inrp8qij22p" />
+<FediaReactions url="https://fedia.social/notes/aagw1inrp8qij22p" client:load/>
+
+## Post with rich text in reply
 <Fedia url="https://fedia.social/notes/ajygrbrdbkqjsotq" />
 <FediaReactions url="https://fedia.social/notes/ajygrbrdbkqjsotq" client:load/>
