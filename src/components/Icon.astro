@@ -1,0 +1,11 @@
+---
+import { iconPaths } from "../data/icon-paths";
+
+interface Props {
+  name: string;
+  class?: string;
+}
+const { name, class: cls = "icon" } = Astro.props;
+const inner = iconPaths[name] ?? iconPaths["close"];
+---
+<svg class={cls} viewBox="0 0 24 24" aria-hidden="true" focusable="false" set:html={inner} />

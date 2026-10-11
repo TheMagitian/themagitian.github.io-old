@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Callout from "../../components/Callout.astro";
+import SwatchGrid from "../../components/SwatchGrid.astro";
+import Fedia from "../../components/Fedia.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import Icon from "../../components/Icon.astro";
+
+export async function getStaticPaths() {
+  const posts = (await getCollection("blog")).filter((p) => !p.data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
+const components = { Callout, SwatchGrid, Fedia };
+---
+<BaseLayout title={`${post.data.title} · themagitian`} description={post.data.description}>
+  <div class="wrap">
+    <p style="margin-top:1.5rem">
+      <a class="md-btn md-btn-text" href="/blog"><Icon name="arrow-back" />All posts</a>
+    </p>
+    <article>
+      <h1 class="headline-m" style="margin-bottom:.25rem">{post.data.title}</h1>
+      <p class="label-l" style="color:var(--md-sys-color-on-surface-variant);margin-top:0">
+        {fmt(post.data.pubDate)}
+        {post.data.updatedDate ? ` · updated ${fmt(post.data.updatedDate)}` : ""}
+        {" · "}{post.data.tags.join(" · ")}
+      </p>
+      <p class="lede">{post.data.description}</p>
+      <div class="post-layout">
+        <div class="prose">
+          <Content components={components} />
+        </div>
+        <TableOfContents headings={headings} />
+      </div>
+    </article>
+  </div>
+</BaseLayout>

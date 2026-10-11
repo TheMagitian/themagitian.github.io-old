@@ -1,23 +1,153 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
 
-import MainGridLayout from "../layouts/MainGridLayout.astro";
-
-import { getEntry } from 'astro:content'
-import {i18n} from "../i18n/translation";
-import I18nKey from "../i18n/i18nKey";
-import Markdown from "@components/misc/Markdown.astro";
-
-const aboutPost = await getEntry('spec', 'about')
-
-const { Content } = await aboutPost.render()
-
+const profiles = [
+  { name: "GitHub", url: "https://github.com/themagitian", icon: "github" },
+  { name: "GitLab", url: "https://gitlab.com/magitian", icon: "gitlab" },
+  { name: "LinkedIn", url: "https://linkedin.com/srinath-anand", icon: "linkedin" },
+  { name: "Fediverse", url: "https://fedia.social/@magitian", icon: "mastodon" },
+];
 ---
-<MainGridLayout title={i18n(I18nKey.about)}>
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
-            <Markdown class="mt-2">
-                <Content />
-            </Markdown>
+<BaseLayout title="About · Srinath Anand" description="About Srinath Anand (themagitian): Rust systems programmer, StratOS Linux developer, portfolio and contact links.">
+  <div class="wrap">
+    <section class="hero">
+      <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+        <img
+          src="/images/alien-avatar.png"
+          alt="Avatar of Srinath Anand"
+          width="112"
+          height="112"
+          style="border-radius:36px;background:var(--md-sys-color-primary-container)"
+        />
+        <div style="min-width:16rem;flex:1">
+          <h1 class="display-s" style="margin:0">Srinath Anand</h1>
+          <p class="body-l" style="color:var(--md-sys-color-on-surface-variant);margin:.25rem 0">
+            Arch Linux user, writing Rust using Emacs.
+          </p>
+          <p style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0 0">
+            {profiles.map((p) => (
+              <a
+                class="md-chip"
+                href={p.url}
+                rel={p.name === "Fediverse" ? "me noopener" : "noopener"}
+                target="_blank"
+              >
+                <Icon name={p.icon} />{p.name}
+              </a>
+            ))}
+          </p>
         </div>
-    </div>
-</MainGridLayout>
+      </div>
+      <p class="lede body-l" style="margin-top:1.25rem">
+        You've arrived at Magitian's personal website. I'm a 21-year old
+        developer learning systems programming in Rust, and I'm working on a
+        Linux distro called <a href="https://stratos-linux.org">StratOS</a>.
+        I'm a Junior at VIT Chennai and Technical Advisor at the
+        <a href="https://lugvitc.net/">Linux Users Group</a>.
+      </p>
+    </section>
+
+    <section style="margin-top:2rem">
+      <h2 class="headline-m">Education</h2>
+      <div class="prose" style="max-width:none">
+        <table>
+          <thead><tr><th>Institution</th><th>Term</th><th>Course</th><th>Grade</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><a href="https://chennai.vit.ac.in">Vellore Institute of Technology, Chennai</a></td>
+              <td>2022–26</td><td>B. Tech CSE (Core)</td><td>CGPA: 8.82</td>
+            </tr>
+            <tr>
+              <td><a href="https://npschennai.com">National Public School, Gopalapuram</a></td>
+              <td>2010–22</td><td>AISSCE</td><td>94.2%</td>
+            </tr>
+            <tr>
+              <td><a href="https://npschennai.com">National Public School, Gopalapuram</a></td>
+              <td>2010–22</td><td>AISSE</td><td>94.4%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section style="margin-top:2rem">
+      <h2 class="headline-m">Projects</h2>
+      <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));margin-top:1rem">
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l"><a href="https://stratos-linux.org">StratOS Linux</a></h3>
+          <p>
+            A GNU/Linux distribution based on Arch Linux with the largest set
+            of software repositories on any Linux distro. My twin Srikanth and
+            I develop the distro and maintain the package repository. I lead
+            the GNOME and Niri spins.
+          </p>
+          <img class="project-shot" src="/images/Portfolio/StratOS.jpg" alt="StratOS Linux desktop" loading="lazy" />
+        </div>
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l"><a href="https://github.com/stratos-linux/rockers">Rockers</a></h3>
+          <p>
+            A meta-package manager in Rust for managing packages across several
+            Linux distributions and repositories.
+          </p>
+          <img class="project-shot" src="/images/Portfolio/Rockers.jpg" alt="Rockers package manager" loading="lazy" />
+          <img class="project-shot" src="/images/Portfolio/Rockers2.jpg" alt="Rockers package manager, second screenshot" loading="lazy" />
+        </div>
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l"><a href="https://gitlab.com/magitian/xoxo">Xoxo</a></h3>
+          <p>
+            Simple symmetric cryptographic algorithm in Rust, with server and
+            client binaries for message exchange.
+          </p>
+        </div>
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l">Smart Planner</h3>
+          <p>
+            A voice assistant for calendar-based task scheduling: Raspberry Pi,
+            ESP8266, Arduino Uno and MQTT, Python NLP, Firebase, and a ReactJS
+            frontend I helped develop.
+          </p>
+        </div>
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l"><a href="https://gitlab.com/magitian/dijkstra/">Dijkstra</a></h3>
+          <p>
+            Visualizes Dijkstra's and A* on a Matplotlib graph and compares
+            their execution time across scenarios.
+          </p>
+          <img class="project-shot" src="/images/Portfolio/Dijkstra2.png" alt="Dijkstra vs A* visualization" loading="lazy" />
+        </div>
+        <div class="md-card md-card-elevated">
+          <h3 class="title-l"><a href="https://gitlab.com/magitian/tui-process-manager">Terminator</a></h3>
+          <p>
+            Proof-of-concept task manager in C using ncurses: live process list
+            updates and UNIX signal delivery.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:2rem">
+      <h2 class="headline-m">Skills</h2>
+      <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));margin-top:1rem">
+        <div class="md-card md-card-filled">
+          <h3 class="title-m">Languages / frameworks</h3>
+          <p>Python · C/C++ · Rust · Java · R · JavaScript · ReactJS · SQL · Bash · NumPy/Jupyter · Matplotlib · ncurses</p>
+        </div>
+        <div class="md-card md-card-filled">
+          <h3 class="title-m">Tools</h3>
+          <p>GNU/Linux · GNU Emacs · Git · GitHub · Docker · Cisco Packet Tracer · Wireshark · Arduino · Raspberry Pi · MQTT · Firebase · PyPI</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:2rem">
+      <div class="md-card md-card-outlined">
+        <p style="margin:0">
+          Content on this site is licensed under
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+          unless stated otherwise.
+        </p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

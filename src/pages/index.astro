@@ -1,0 +1,47 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
+
+const posts = (await getCollection("blog"))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const featured = posts.slice(0, 3);
+
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
+---
+<BaseLayout title="themagitian · home" description="Personal website and blog with a theme you can tune.">
+  <div class="wrap">
+    <section class="hero">
+      <p class="label-l" style="color:var(--md-sys-color-primary);margin:0">PERSONAL SITE · BLOG</p>
+      <h1 class="display-s" style="margin:.5rem 0">Hello, I'm Srinath.</h1>
+      <p class="lede body-l">
+        I write about Arch Linux, Emacs, Rust, and color science. This whole site is themed by a dependency-free dynamic color engine -
+        pick an accent hue below and everything repaints itself.
+      </p>
+      <p style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem">
+        <a class="md-btn md-btn-filled" href="/blog"><Icon name="article" />Read the blog</a>
+        <a class="md-btn md-btn-tonal" href="/about"><Icon name="person" />About me</a>
+      </p>
+    </section>
+
+    <section style="margin-top:2rem">
+      <h2 class="headline-m">Latest posts</h2>
+      <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));margin-top:1rem">
+        {featured.map((p) => (
+          <a href={`/blog/${p.id}`} class="md-card md-card-elevated" style="text-decoration:none;display:block">
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+              {p.data.tags.slice(0, 3).map((t) => <span class="md-chip">{t}</span>)}
+            </div>
+            <h3 class="title-l" style="color:var(--md-sys-color-on-surface)">{p.data.title}</h3>
+            <p class="body-l">{p.data.description}</p>
+            <p class="label-l" style="color:var(--md-sys-color-on-surface-variant)">{fmt(p.data.pubDate)}</p>
+          </a>
+        ))}
+      </div>
+      <p style="margin-top:1rem">
+        <a class="md-btn md-btn-text" href="/blog">All posts <Icon name="arrow-forward" /></a>
+      </p>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+import Icon from "./Icon.astro";
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
+---
+<header class="md-topbar">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <Icon name="neurology" />
+      <span>themagitian</span>
+    </a>
+    <nav aria-label="Primary">
+      <a class="md-navlink" href="/" aria-current={isActive("/") ? "page" : undefined}>Home</a>
+      <a class="md-navlink" href="/blog" aria-current={isActive("/blog") ? "page" : undefined}>Blog</a>
+      <a class="md-navlink" href="/about" aria-current={isActive("/about") ? "page" : undefined}>About</a>
+      <a class="md-navlink" href="/search" aria-current={isActive("/search") ? "page" : undefined} aria-label="Search">
+        <span style="display:inline-flex;align-items:center;gap:.35rem"><Icon name="search" />Search</span>
+      </a>
+    </nav>
+  </div>
+</header>

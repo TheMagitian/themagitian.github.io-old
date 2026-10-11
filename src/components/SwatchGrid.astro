@@ -1,0 +1,40 @@
+---
+/** Live grid of the current theme's roles. Re-renders when the theme changes. */
+interface Props {
+  roles?: string[];
+}
+const { roles = ["primary", "onPrimary", "primaryContainer", "onPrimaryContainer", "secondary", "secondaryContainer", "tertiary", "tertiaryContainer", "surface", "surfaceContainerHigh", "surfaceContainerHighest", "error", "errorContainer"] } = Astro.props;
+const kebab = (s: string) => s.replace(/([A-Z])/g, (m) => "-" + m.toLowerCase());
+---
+<div class="swatch-grid" data-swatch-grid>
+  {roles.map((r) => (
+    <div class="swatch">
+      <div class="chip" style={`background:var(--md-sys-color-${kebab(r)})`}></div>
+      <div class="meta"><b>{r}</b><code data-swatch-hex={r}>…</code></div>
+    </div>
+  ))}
+</div>
+
+<script is:inline>
+  (() => {
+    const paint = () => {
+      if (!window.M3Theme) return;
+      const st = window.M3Theme.state;
+      // Re-read live values from the applied custom properties.
+      const cs = getComputedStyle(document.documentElement);
+      document.querySelectorAll("[data-swatch-hex]").forEach((el) => {
+        const role = el.getAttribute("data-swatch-hex");
+        const kebab = role.replace(/([A-Z])/g, (m) => "-" + m.toLowerCase());
+        el.textContent = cs.getPropertyValue("--md-sys-color-" + kebab).trim();
+      });
+    };
+    // Repaint after theme changes (the dock fires m3-theme-change on every edit).
+    document.addEventListener("m3-theme-change", paint);
+    document.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t && t.id && /^(m3|td)-/.test(String(t.id))) paint();
+    });
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paint);
+    else paint();
+  })();
+</script>

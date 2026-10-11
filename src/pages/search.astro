@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Search · themagitian" description="Search all blog posts.">
+  <div class="wrap">
+    <h1 class="headline-m" style="margin-top:2rem">Search</h1>
+    <p style="margin-top:1rem">
+      <input
+        id="search-input"
+        type="search"
+        placeholder="Search posts…"
+        autocomplete="off"
+        aria-label="Search posts"
+        style="font:inherit;width:min(32rem,100%);background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);border-radius:var(--md-shape-full);padding:.65rem 1.25rem"
+      />
+    </p>
+    <p class="body-l" id="search-count" style="color:var(--md-sys-color-on-surface-variant)" aria-live="polite"></p>
+    <div id="search-results" style="display:grid;gap:1rem;margin-top:1rem"></div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const input = document.getElementById("search-input");
+    const results = document.getElementById("search-results");
+    const count = document.getElementById("search-count");
+    if (!input || !results || !count) return;
+    let posts = [];
+    const esc = (s) =>
+      String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const render = (q) => {
+      const needle = q.trim().toLowerCase();
+      const hits = !needle
+        ? posts
+        : posts.filter((p) =>
+            [p.title, p.description, (p.tags || []).join(" ")].join(" ").toLowerCase().includes(needle)
+          );
+      count.textContent = needle
+        ? `${hits.length} result${hits.length === 1 ? "" : "s"} for “${q.trim()}”`
+        : `${posts.length} posts total`;
+      results.innerHTML = hits
+        .map(
+          (p) =>
+            `<a href="/blog/${esc(p.slug)}" class="md-card md-card-outlined" style="text-decoration:none;display:block">` +
+            `<p class="label-l" style="color:var(--md-sys-color-primary);margin:0">${esc(p.pubDate)}</p>` +
+            `<h2 class="title-l" style="color:var(--md-sys-color-on-surface);margin:.25rem 0">${esc(p.title)}</h2>` +
+            `<p style="margin:.25rem 0">${esc(p.description)}</p></a>`
+        )
+        .join("");
+    };
+    fetch("/search-index.json")
+      .then((r) => r.json())
+      .then((data) => {
+        posts = data;
+        const initial = new URLSearchParams(location.search).get("q") || "";
+        input.value = initial;
+        render(initial);
+      })
+      .catch(() => {
+        count.textContent = "Search index failed to load.";
+      });
+    input.addEventListener("input", () => render(input.value));
+  })();
+</script>

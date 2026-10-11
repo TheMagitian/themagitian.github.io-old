@@ -1,0 +1,47 @@
+---
+import themeHead from "../scripts/theme/m3-head.js?raw";
+import Header from "../components/Header.astro";
+import ThemeDock from "../components/ThemeDock.astro";
+import Footer from "../components/Footer.astro";
+import Icon from "../components/Icon.astro";
+import "katex/dist/katex.min.css";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = "Personal website and blog, with a tunable theme." } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%236750a4'/></svg>" />
+    <script is:inline set:html={themeHead} />
+  </head>
+  <body>
+    <Header />
+    <ThemeDock />
+    <main><slot /></main>
+    <Footer />
+    <button class="md-fab" id="to-top" type="button" aria-label="Back to top" hidden>
+      <Icon name="arrow-upward" />
+    </button>
+    <script is:inline>
+      (() => {
+        const btn = document.getElementById("to-top");
+        if (!btn) return;
+        const sync = () => {
+          btn.hidden = (window.scrollY || 0) < 600;
+        };
+        addEventListener("scroll", sync, { passive: true });
+        btn.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+        sync();
+      })();
+    </script>
+  </body>
+</html>

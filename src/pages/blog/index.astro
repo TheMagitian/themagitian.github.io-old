@@ -1,0 +1,29 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = (await getCollection("blog"))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
+---
+<BaseLayout title="Blog · themagitian" description="All blog posts.">
+  <div class="wrap">
+    <h1 class="headline-m" style="margin-top:2rem">Blog</h1>
+    <p class="body-l" style="color:var(--md-sys-color-on-surface-variant)">
+      {posts.length} posts have been written so far:
+    </p>
+    <div style="display:grid;gap:1rem;margin-top:1.5rem">
+      {posts.map((p) => (
+        <a href={`/blog/${p.id}`} class="md-card md-card-outlined" style="text-decoration:none;display:block">
+          <p class="label-l" style="color:var(--md-sys-color-primary);margin:0">{fmt(p.data.pubDate)}</p>
+          <h2 class="title-l" style="color:var(--md-sys-color-on-surface);margin:.25rem 0">{p.data.title}</h2>
+          <p style="margin:.25rem 0">{p.data.description}</p>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem">
+            {p.data.tags.map((t) => <span class="md-chip">{t}</span>)}
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

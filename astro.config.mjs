@@ -1,99 +1,28 @@
-import tailwind from "@astrojs/tailwind"
-// import Compress from "astro-compress"
-import icon from "astro-icon"
-import { defineConfig } from "astro/config"
-import Color from "colorjs.io"
-import mdx from "@astrojs/mdx"
-import rehypeAutolinkHeadings from "rehype-autolink-headings"
-import rehypeKatex from "rehype-katex"
-import rehypeSlug from "rehype-slug"
-import remarkMath from "remark-math"
-import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs"
-import svelte from "@astrojs/svelte"
-import swup from '@swup/astro';
+import { defineConfig } from "astro/config";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import { unified } from "@astrojs/markdown-remark";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import { m3ShikiLight, m3ShikiDark } from "./scripts/m3-shiki-theme.mjs";
 
-const oklchToHex = (str) => {
-  const DEFAULT_HUE = 250
-  const regex = /-?\d+(\.\d+)?/g
-  const matches = str.string.match(regex)
-  const lch = [matches[0], matches[1], DEFAULT_HUE]
-  return new Color("oklch", lch).to("srgb").toString({
-    format: "hex",
-  })
-}
-
-// https://astro.build/config
 export default defineConfig({
-  site: "https://themagitian.github.io/",
-  base: "/",
-  integrations: [
-    tailwind(),
-    swup({
-      theme: false,
-      animationClass: 'transition-',
-      containers: ['main'],
-      smoothScrolling: true,
-      cache: true,
-      preload: true,
-      accessibility: true,
-      globalInstance: true,
-    }),
-    icon({
-      include: {
-        "material-symbols": ["*"],
-        "fa6-brands": ["*"],
-        "fa6-regular": ["*"],
-        "fa6-solid": ["*"],
-      },
-    }),
-	// Compress({
-    //   Image: false,
-    // }),
-    svelte(),
-    mdx(),
-  ],
+  site: "https://themagitian.github.io",
+  integrations: [mdx(), sitemap()],
   markdown: {
-  	shikiConfig: {
-	  theme: 'one-dark-pro',
-	},
-    remarkPlugins: [remarkMath, remarkReadingTime],
-    rehypePlugins: [
-      rehypeKatex,
-      rehypeSlug,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: "append",
-          properties: {
-            className: ["anchor"],
-          },
-          content: {
-            type: "element",
-            tagName: "span",
-            properties: {
-              className: ["anchor-icon"],
-              'data-pagefind-ignore': true,
-            },
-            children: [
-              {
-                type: "text",
-                value: "#",
-              },
-            ],
-          },
-        },
-      ],
-    ],
-  },
-  vite: {
-    css: {
-      preprocessorOptions: {
-        stylus: {
-          define: {
-            oklchToHex: oklchToHex,
-          },
-        },
-      },
+    // Math via the markdown pipeline (mdx() plugin options are ignored in
+    // @astrojs/mdx v8; the processor is inherited instead).
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [rehypeKatex],
+    }),
+    // Shiki on, with light/dark themes generated from the site's own color
+    // engine (see scripts/m3-shiki-theme.mjs). global.css flips the
+    // --shiki-dark* variables when the dark scheme is active.
+    syntaxHighlight: "shiki",
+    shikiConfig: {
+      themes: { light: m3ShikiLight, dark: m3ShikiDark },
+      defaultColor: "light",
     },
   },
-})
+});

@@ -1,0 +1,11 @@
+---
+import Icon from "./Icon.astro";
+interface Props {
+  icon?: string;
+}
+const { icon = "lightbulb" } = Astro.props;
+---
+<aside class="md-callout">
+  <Icon name={icon} />
+  <div><slot /></div>
+</aside>

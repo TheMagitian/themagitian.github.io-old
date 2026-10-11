@@ -1,0 +1,87 @@
+---
+import Icon from "./Icon.astro";
+---
+<div class="theme-dock" role="region" aria-label="Theme controls">
+  <div class="wrap theme-dock-inner">
+    <label class="dock-hue" title="Accent hue">
+      <Icon name="palette" />
+      <input
+        class="md-slider md-slider-hue dock-slider"
+        type="range"
+        id="td-hue"
+        min="0"
+        max="360"
+        step="1"
+        value="260"
+        aria-label="Accent hue"
+      />
+      <output id="td-hue-val" for="td-hue">260°</output>
+    </label>
+    <select id="td-variant" aria-label="Scheme variant">
+      <option value="tonalSpot">Tonal spot</option>
+      <option value="expressive">Expressive</option>
+      <option value="vibrant">Vibrant</option>
+      <option value="neutral">Neutral</option>
+      <option value="fidelity">Fidelity</option>
+      <option value="rainbow">Rainbow</option>
+      <option value="fruitSalad">Fruit salad</option>
+    </select>
+    <button class="dock-dark" id="td-dark" type="button" aria-pressed="false" aria-label="Toggle dark theme">
+      <span data-icon-dark><Icon name="dark-mode" /></span>
+      <span data-icon-light hidden><Icon name="light-mode" /></span>
+    </button>
+    <button class="dock-dark" id="td-reset" type="button" aria-label="Reset theme to defaults" title="Reset theme">
+      <Icon name="restart-alt" />
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const hue = document.getElementById("td-hue");
+    const hueVal = document.getElementById("td-hue-val");
+    const variant = document.getElementById("td-variant");
+    const darkBtn = document.getElementById("td-dark");
+    const resetBtn = document.getElementById("td-reset");
+    if (!window.M3Theme || !hue || !variant || !darkBtn || !resetBtn) return;
+    const st = window.M3Theme.state;
+    let darkOn = !!st.dark;
+    hue.value = String(st.hue);
+    variant.value = st.variant;
+    const syncBtn = () => {
+      darkBtn.setAttribute("aria-pressed", String(darkOn));
+      darkBtn.querySelector("[data-icon-dark]").hidden = darkOn;
+      darkBtn.querySelector("[data-icon-light]").hidden = !darkOn;
+    };
+    const paint = () => {
+      hueVal.textContent = hue.value + "°";
+      window.M3Theme.apply({
+        hue: Number(hue.value),
+        chroma: st.chroma,
+        variant: variant.value,
+        dark: darkOn,
+        spec: st.spec,
+      });
+      document.dispatchEvent(new CustomEvent("m3-theme-change"));
+    };
+    hue.addEventListener("input", paint);
+    variant.addEventListener("change", paint);
+    darkBtn.addEventListener("click", () => {
+      darkOn = !darkOn;
+      syncBtn();
+      paint();
+    });
+    resetBtn.addEventListener("click", () => {
+      try { localStorage.removeItem("m3-theme-v1"); } catch {}
+      hue.value = "260";
+      variant.value = "tonalSpot";
+      darkOn = !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      st.chroma = 48;
+      st.spec = "2021";
+      syncBtn();
+      paint();
+    });
+    syncBtn();
+    paint();
+  })();
+</script>

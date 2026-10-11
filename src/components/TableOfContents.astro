@@ -1,0 +1,66 @@
+---
+/**
+ * Table of contents, rendered server-side from Astro's `headings`
+ * (no client JavaScript). Shows h2/h3 entries; renders nothing when the
+ * page has fewer than two headings. Place inside `.post-layout`.
+ */
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  headings: Heading[];
+}
+const { headings } = Astro.props;
+const items = (headings || []).filter((h) => h.depth === 2 || h.depth === 3);
+---
+{items.length >= 2 && (
+  <aside class="post-toc" aria-label="Table of contents">
+    <p class="label-l post-toc-title">On this page</p>
+    <nav>
+      <ul>
+        {items.map((h) => (
+          <li class={h.depth === 3 ? "toc-h3" : undefined}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+
+<script is:inline>
+  (() => {
+    const toc = document.currentScript && document.currentScript.closest(".post-toc");
+    if (!toc) return;
+    const article = toc.closest("article");
+    if (!article) return;
+    const links = new Map();
+    toc.querySelectorAll("a[data-toc-link]").forEach((a) =>
+      links.set(a.getAttribute("data-toc-link"), a)
+    );
+    const headings = [...article.querySelectorAll(".prose h2[id], .prose h3[id]")].filter((h) =>
+      links.has(h.id)
+    );
+    if (!headings.length) return;
+    let current = null;
+    const setActive = (id) => {
+      if (current === id) return;
+      current = id;
+      links.forEach((a, slug) => {
+        const on = slug === id;
+        a.classList.toggle("active", on);
+        if (on) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      });
+    };
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+      },
+      { rootMargin: "-15% 0px -75% 0px" }
+    );
+    headings.forEach((h) => obs.observe(h));
+  })();
+</script>
+)}

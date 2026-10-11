@@ -1,0 +1,350 @@
+---
+/**
+ * Federated post embed.
+ *
+ * Fetches the ActivityStreams note AND the Mastodon-API interactions
+ * (reactions, replies, likes, boosts) server-side at build time, then
+ * renders the same card with expandable detail sections via native
+ * <details> - no client JavaScript needed.
+ *
+ * Build-time fetching is deliberate: browsers are blocked from the live
+ * API by fedia.social's CORS policy, so a client-side loader cannot work.
+ * Renders a graceful link fallback when a fetch fails.
+ */
+interface Props {
+  url: string;
+  class?: string;
+}
+
+const { url, class: className } = Astro.props;
+
+interface Author {
+  name?: string;
+  preferredUsername?: string;
+  url?: string;
+  icon?: { url?: string } | string;
+}
+
+interface Attachment {
+  type: string;
+  mediaType?: string;
+  url?: string;
+  name?: string;
+}
+
+interface Post {
+  type: string;
+  content?: string;
+  published?: string;
+  attributedTo?: Author | string;
+  url?: string;
+  attachment?: Attachment[];
+  summary?: string;
+  sensitive?: boolean;
+}
+
+interface Reaction {
+  name: string;
+  count: number;
+}
+
+interface Account {
+  username: string;
+  display_name: string;
+  avatar: string;
+  url: string;
+}
+
+interface Status {
+  content: string;
+  account: Account;
+  created_at: string;
+  favourites_count: number;
+  reblogs_count: number;
+  reactions: Reaction[];
+  media_attachments: { type: string; url: string; description: string | null }[];
+}
+
+const noteUrl = new URL(url);
+const displayName = noteUrl.hostname;
+const noteId = noteUrl.pathname.split("/").filter(Boolean).pop() || "";
+const apiBase = `https://${displayName}/api/v1/statuses`;
+
+async function getJson<T>(endpoint: string, timeoutMs: number, retries = 2): Promise<T | null> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(endpoint, {
+        headers: endpoint.includes("/api/")
+          ? {}
+          : {
+              Accept:
+                'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+            },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return (await res.json()) as T;
+    } catch {
+      if (attempt === retries) return null;
+      await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+    }
+  }
+  return null;
+}
+
+let post: Post | null = null;
+const activity = await getJson<Post>(url, 10000);
+if (activity) {
+  const validTypes = ["Note", "Article", "Page", "Question", "Video", "Audio", "Document", "Image"];
+  if (activity.type && validTypes.includes(activity.type)) post = activity;
+}
+
+if (post && typeof post.attributedTo === "string") {
+  const author = await getJson<Author>(post.attributedTo, 5000);
+  if (author) post.attributedTo = author;
+}
+
+const authorData =
+  post?.attributedTo && typeof post.attributedTo === "object" ? post.attributedTo : null;
+const authorName = authorData?.name || authorData?.preferredUsername || "";
+const authorHandle = authorData?.preferredUsername ? `@${authorData.preferredUsername}` : "";
+const authorUrl = authorData?.url || "";
+const authorAvatar =
+  typeof authorData?.icon === "string" ? authorData.icon : authorData?.icon?.url || "";
+const publishedDate = post?.published ? new Date(post.published) : null;
+const postUrl = post?.url || url;
+const isSensitive = post?.sensitive === true;
+const contentWarning = post?.summary || "";
+
+const formatDate = (date: Date | string) =>
+  new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+// Interactions (server-side; see note above).
+const [status, context, likes, boosts] = await Promise.all([
+  getJson<Status>(`${apiBase}/${noteId}`, 8000),
+  getJson<{ descendants: Status[] }>(`${apiBase}/${noteId}/context`, 8000),
+  getJson<Account[]>(`${apiBase}/${noteId}/favourited_by`, 8000),
+  getJson<Account[]>(`${apiBase}/${noteId}/reblogged_by`, 8000),
+]);
+const reactions = status?.reactions || [];
+const favCount = status?.favourites_count || 0;
+const boostCount = status?.reblogs_count || 0;
+const replies = context?.descendants || [];
+const likeUsers = likes || [];
+const boostUsers = boosts || [];
+const reactionTotal = reactions.reduce((a, r) => a + (r.count || 0), 0);
+const hasInteractions =
+  reactions.length > 0 || replies.length > 0 || likeUsers.length > 0 || boostUsers.length > 0;
+
+const svgOpen = (inner: string) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const statIcon = {
+  comment: svgOpen(
+    '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  ),
+  reactions: svgOpen(
+    '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+  ),
+  likes: svgOpen(
+    '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  ),
+  boosts: svgOpen(
+    '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  ),
+  replies: svgOpen(
+    '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  ),
+};
+---
+
+<div class:list={["fedia-embed", className]}>
+  {post ? (
+    <div class="fedia-card">
+      <img class="fedia-favicon" src="https://fedia.social/favicon.ico" alt="" width="24" height="24" loading="lazy" />
+      <div class="fedia-card-header">
+        {authorAvatar && (
+          <img class="fedia-avatar" src={authorAvatar} alt="" width="44" height="44" loading="lazy" />
+        )}
+        <div class="fedia-author">
+          {authorName && (
+            <a class="fedia-name" href={authorUrl} target="_blank" rel="noopener noreferrer">
+              {authorName}
+            </a>
+          )}
+          {authorHandle && <span class="fedia-handle">{authorHandle}</span>}
+        </div>
+        {authorUrl && (
+          <a class="md-chip fedia-follow" href={authorUrl} target="_blank" rel="noopener noreferrer">
+            Follow
+          </a>
+        )}
+      </div>
+
+      {isSensitive && contentWarning && (
+        <div class="fedia-cw">
+          <span class="fedia-cw-label">Content warning: {contentWarning}</span>
+        </div>
+      )}
+
+      {post.content && (
+        <div class="fedia-content">
+          <Fragment set:html={post.content} />
+        </div>
+      )}
+
+      {post.attachment && post.attachment.length > 0 && (
+        <div class="fedia-attachments">
+          {post.attachment.map((att) => {
+            if (!att.url) return null;
+            const mt = (att.mediaType || "").toLowerCase();
+            if (mt.startsWith("video/") || mt === "image/gif" || mt === "image/gifv") {
+              return (
+                <video
+                  class="fedia-media"
+                  src={att.url}
+                  controls={!mt.startsWith("image/")}
+                  autoplay={mt.startsWith("image/")}
+                  loop
+                  muted
+                  playsinline
+                  aria-label={att.name || ""}
+                />
+              );
+            }
+            return <img class="fedia-media" src={att.url} alt={att.name || ""} loading="lazy" />;
+          })}
+        </div>
+      )}
+
+      {publishedDate && (
+        <a class="fedia-date" href={postUrl} target="_blank" rel="noopener noreferrer">
+          {formatDate(publishedDate)}
+        </a>
+      )}
+
+      {hasInteractions && (
+        <details class="fedia-interactions-wrap">
+          <summary class="fedia-show-btn" aria-label="Toggle interactions">
+            <span class="fedia-show-iconbox" aria-hidden="true">
+              <Fragment set:html={statIcon.comment} />
+            </span>
+            <span class="fedia-show-text-closed" aria-hidden="true">Show interactions</span>
+            <span class="fedia-show-text-open" aria-hidden="true">Hide interactions</span>
+            <span class="visually-hidden">Toggle interactions</span>
+          </summary>
+          <div class="fedia-interactions">
+          {reactions.length > 0 && (
+            <details class="fedia-stat">
+              <summary class="fedia-stat-btn" title="Reactions">
+                <span class="fedia-show-iconbox" aria-hidden="true">
+                  <Fragment set:html={statIcon.reactions} />
+                </span>
+                <span class="stat-count">{reactionTotal}</span>
+              </summary>
+              <div class="fedia-reaction-list">
+                {reactions.map((rxn) => (
+                  <span class="fedia-reaction-badge">
+                    {rxn.name} {rxn.count}
+                  </span>
+                ))}
+              </div>
+            </details>
+          )}
+          {favCount > 0 && (
+            <details class="fedia-stat">
+              <summary class="fedia-stat-btn" title="Likes">
+                <span class="fedia-show-iconbox" aria-hidden="true">
+                  <Fragment set:html={statIcon.likes} />
+                </span>
+                <span class="stat-count">{favCount}</span>
+              </summary>
+              {likeUsers.length > 0 && (
+                <div class="fedia-user-list">
+                  {likeUsers.map((user) => (
+                    <a class="fedia-user" href={user.url} target="_blank" rel="noopener noreferrer">
+                      <img class="fedia-avatar-sm" src={user.avatar} alt="" width="28" height="28" loading="lazy" />
+                      <span>{user.display_name || user.username}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </details>
+          )}
+          {boostCount > 0 && (
+            <details class="fedia-stat">
+              <summary class="fedia-stat-btn" title="Boosts">
+                <span class="fedia-show-iconbox" aria-hidden="true">
+                  <Fragment set:html={statIcon.boosts} />
+                </span>
+                <span class="stat-count">{boostCount}</span>
+              </summary>
+              {boostUsers.length > 0 && (
+                <div class="fedia-user-list">
+                  {boostUsers.map((user) => (
+                    <a class="fedia-user" href={user.url} target="_blank" rel="noopener noreferrer">
+                      <img class="fedia-avatar-sm" src={user.avatar} alt="" width="28" height="28" loading="lazy" />
+                      <span>{user.display_name || user.username}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </details>
+          )}
+          {replies.length > 0 && (
+            <details class="fedia-stat">
+              <summary class="fedia-stat-btn" title="Replies">
+                <span class="fedia-show-iconbox" aria-hidden="true">
+                  <Fragment set:html={statIcon.replies} />
+                </span>
+                <span class="stat-count">{replies.length}</span>
+              </summary>
+              <div class="fedia-reply-list">
+                {replies.map((reply) => (
+                  <div class="fedia-reply">
+                    <div class="fedia-reply-header">
+                      <img class="fedia-avatar-sm" src={reply.account.avatar} alt="" width="28" height="28" loading="lazy" />
+                      <a class="fedia-reply-author" href={reply.account.url} target="_blank" rel="noopener noreferrer">
+                        {reply.account.display_name || reply.account.username}
+                      </a>
+                      <span class="fedia-reply-date">{formatDate(reply.created_at)}</span>
+                    </div>
+                    <div class="fedia-reply-content">
+                      <Fragment set:html={reply.content} />
+                    </div>
+                    {reply.media_attachments && reply.media_attachments.length > 0 && (
+                      <div class="fedia-reply-media">
+                        {reply.media_attachments.map((media) =>
+                          media.type === "video" ? (
+                            <video class="fedia-reply-img" src={media.url} controls />
+                          ) : (
+                            <img class="fedia-reply-img" src={media.url} alt={media.description || ""} loading="lazy" />
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+          </div>
+        </details>
+      )}
+
+      <div class="fedia-footer">
+        <a class="fedia-link" href={postUrl} target="_blank" rel="noopener noreferrer">
+          View on {displayName}
+        </a>
+      </div>
+    </div>
+  ) : (
+    <div class="fedia-card fedia-card--error">
+      <img class="fedia-favicon" src="https://fedia.social/favicon.ico" alt="" width="24" height="24" loading="lazy" />
+      <div class="fedia-error-body">
+        <a href={url} target="_blank" rel="noopener noreferrer" class="fedia-error-link">
+          View post on {displayName}
+        </a>
+      </div>
+    </div>
+  )}
+</div>
