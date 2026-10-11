@@ -1,11 +1,4 @@
-# Local working log — never commit
-WEBSITE-PROGRESS.md
-
-# Dependencies & build output
 node_modules/
 dist/
 .astro/
-
-# OS / editor
-.DS_Store
-Thumbs.db
+pnpm-workspace.yaml
