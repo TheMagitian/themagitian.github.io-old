@@ -1,0 +1,54 @@
+---
+/**
+ * The fixed FX layer.
+ *
+ * Three siblings, all `aria-hidden` and pointer-transparent:
+ *   • `#fx-bg`      - the background animation canvas, painted *behind* the
+ *                     page (see the FX block in global.css),
+ *   • `#fx-trail`   - the cursor's accent trail, painted above everything,
+ *   • `#fx-cursor`  - the Tux head, tinted with the live accent roles.
+ *
+ * The head is the site's own `public/images/tux.svg`, inlined and painted in
+ * two Material tones (see below), so it re-tints itself with the website
+ * accent for free.
+ *
+ * The behaviour lives in `src/scripts/fx/`, loaded as a bundled (deferred)
+ * module; the theme dock talks to it through `m3-fx-*` custom events, so the
+ * two scripts never depend on load order.
+ */
+import tuxRaw from "../../public/images/tux.svg?raw";
+
+// The source SVG is monochrome line-art: its "holes" (belly, face, feet) are
+// zero-winding regions that show the page through the cursor. Re-drawing the
+// body's outer contour once more raises every interior winding by +1, turning
+// the whole silhouette solid - that copy becomes the backing layer.
+const [tuxLine, tuxBody, tuxDots] = [...tuxRaw.matchAll(/<path d="([^"]+)"/g)].map((m) => m[1]);
+const cut = tuxBody.indexOf("zm"); // end of the outer contour (z followed by m)
+const tuxSolid = cut > 0 ? `${tuxBody} ${tuxBody.slice(0, cut + 1)}` : tuxBody;
+---
+<canvas class="fx-bg" id="fx-bg" aria-hidden="true"></canvas>
+<canvas class="fx-trail" id="fx-trail" aria-hidden="true"></canvas>
+<div class="fx-cursor-ring" id="fx-cursor-ring" aria-hidden="true"><span></span></div>
+<div class="fx-cursor" id="fx-cursor" aria-hidden="true">
+  <!-- Tux (public/images/tux.svg), Material-tinted: a solid backing
+       silhouette in the belly tone with the original line-art in the body
+       tone on top. Both come from `--fx-tux-*` (pinned to the light-mode
+       palette by the FX layer), so the mascot keeps the same dark look in
+       light and dark mode while still following the accent. -->
+  <svg viewBox="0 0 24 24" focusable="false">
+    <g fill="var(--fx-tux-belly, var(--md-sys-color-primary-container))">
+      <path d={tuxLine} />
+      <path d={tuxSolid} />
+      <path d={tuxDots} />
+    </g>
+    <g fill="var(--fx-tux-body, var(--md-sys-color-primary))">
+      <path d={tuxLine} />
+      <path d={tuxBody} />
+      <path d={tuxDots} />
+    </g>
+  </svg>
+</div>
+
+<script>
+  import "../scripts/fx/index.js";
+</script>

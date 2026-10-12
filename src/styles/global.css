@@ -464,7 +464,21 @@ a:hover .webring-arrow {
   min-width: 0;
   margin: 0;
 }
-.dock-hue > .icon { width: 20px; height: 20px; color: var(--md-sys-color-primary); flex: none; }
+.dock-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 2px;
+  margin: -2px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  cursor: pointer;
+}
+.dock-reset:hover { background: var(--md-sys-color-surface-container-high); }
+.dock-reset .icon { width: 20px; height: 20px; flex: none; }
 .dock-hue output { font-size: 0.8125rem; font-weight: 560; min-width: 3.2ch; color: var(--md-sys-color-on-surface-variant); }
 .dock-slider { height: 1.75rem; }
 .dock-slider::-webkit-slider-runnable-track { height: 0.75rem; }
@@ -941,4 +955,108 @@ img { max-width: 100%; height: auto; }
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* ---------- FX layer: background canvas, Tux cursor head + accent trail ----------
+   The layer is progressive enhancement driven by src/scripts/fx/*. The
+   background canvas is `z-index: -1`, which paints it above the (propagated)
+   body background but below every bit of content, so text stays crisp and the
+   effects show through in the page margins and between cards. */
+.fx-bg,
+.fx-trail {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.fx-bg {
+  z-index: -1;
+}
+.fx-trail {
+  z-index: 9997;
+}
+.fx-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
+  z-index: 9998;
+  pointer-events: none;
+}
+.fx-cursor-ring > span {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--md-sys-color-primary) 65%, transparent);
+  opacity: 0.35;
+  transition: opacity 0.2s var(--md-ease);
+}
+.fx-cursor-ring.is-hidden > span {
+  opacity: 0;
+}
+.fx-cursor-ring.is-hover > span {
+  opacity: 0.7;
+  transform: scale(1.15);
+}
+.fx-cursor-ring.is-burst > span {
+  animation: fx-burst 0.45s var(--md-ease);
+}
+@keyframes fx-burst {
+  from {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+.fx-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 42px;
+  height: 42px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s var(--md-ease);
+  will-change: transform;
+}
+.fx-cursor.is-on {
+  opacity: 1;
+}
+.fx-cursor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 5px rgb(0 0 0 / 0.3));
+  /* Scale around the pointer hotspot (the head is offset -12px,-12px). */
+  transform-origin: 12px 12px;
+  transition: transform 0.12s var(--md-ease);
+}
+.fx-cursor.is-hover svg {
+  transform: scale(1.16);
+}
+.fx-cursor.is-down svg {
+  transform: scale(0.82);
+}
+/* Hand the pointer over to the Tux head while it is enabled. */
+html.fx-cursor-on,
+html.fx-cursor-on * {
+  cursor: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-cursor-ring > span {
+    animation: none !important;
+  }
+  .fx-cursor svg {
+    transition: none;
+  }
+}
+#td-cursor[aria-pressed="false"] {
+  opacity: 0.5;
 }

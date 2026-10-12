@@ -1,6 +1,7 @@
 ---
 import themeHead from "../scripts/theme/m3-head.js?raw";
 import Header from "../components/Header.astro";
+import FxLayer from "../components/FxLayer.astro";
 import ThemeDock from "../components/ThemeDock.astro";
 import Footer from "../components/Footer.astro";
 import Icon from "../components/Icon.astro";
@@ -25,6 +26,7 @@ const { title, description = "Personal website and blog, with a tunable theme." 
   </head>
   <body>
     <Header />
+    <FxLayer />
     <ThemeDock />
     <main><slot /></main>
     <Footer />

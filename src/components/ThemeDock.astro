@@ -4,7 +4,9 @@ import Icon from "./Icon.astro";
 <div class="theme-dock" role="region" aria-label="Theme controls">
   <div class="wrap theme-dock-inner">
     <label class="dock-hue" title="Accent hue">
-      <Icon name="palette" />
+      <button class="dock-reset" id="td-reset" type="button" aria-label="Reset theme to defaults" title="Reset theme">
+        <Icon name="palette" />
+      </button>
       <input
         class="md-slider md-slider-hue dock-slider"
         type="range"
@@ -26,12 +28,21 @@ import Icon from "./Icon.astro";
       <option value="rainbow">Rainbow</option>
       <option value="fruitSalad">Fruit salad</option>
     </select>
+    <select id="td-fx" aria-label="Background animation" title="Background animation">
+      <option value="honeycomb">Honeycomb</option>
+      <option value="dots">Dot matrix</option>
+      <option value="shapes">M3 shapes</option>
+      <option value="circuit">Circuit traces</option>
+      <option value="off">No background</option>
+    </select>
+    <button class="dock-dark" id="td-cursor" type="button" aria-pressed="true" aria-label="Toggle the custom cursor" title="Custom cursor">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path fill="currentColor" d="M3 3l18 9-7 1.2L11 21z" />
+      </svg>
+    </button>
     <button class="dock-dark" id="td-dark" type="button" aria-pressed="false" aria-label="Toggle dark theme">
       <span data-icon-dark><Icon name="dark-mode" /></span>
       <span data-icon-light hidden><Icon name="light-mode" /></span>
-    </button>
-    <button class="dock-dark" id="td-reset" type="button" aria-label="Reset theme to defaults" title="Reset theme">
-      <Icon name="restart-alt" />
     </button>
   </div>
 </div>
@@ -83,5 +94,43 @@ import Icon from "./Icon.astro";
     });
     syncBtn();
     paint();
+  })();
+</script>
+
+<script is:inline>
+  (() => {
+    const fxSel = document.getElementById("td-fx");
+    const cursorBtn = document.getElementById("td-cursor");
+    if (!fxSel || !cursorBtn) return;
+    const KEY = "m3-fx-v1";
+    const saved = (() => {
+      try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
+    })();
+    const st = Object.assign({ effect: "honeycomb", cursor: true }, saved);
+    const save = () => {
+      try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {}
+    };
+    const sync = () => {
+      fxSel.value = st.effect;
+      cursorBtn.setAttribute("aria-pressed", String(!!st.cursor));
+    };
+    const broadcast = () => {
+      save();
+      document.dispatchEvent(new CustomEvent("m3-fx-change", { detail: { ...st } }));
+    };
+    fxSel.addEventListener("change", () => {
+      st.effect = fxSel.value;
+      broadcast();
+    });
+    cursorBtn.addEventListener("click", () => {
+      st.cursor = !st.cursor;
+      sync();
+      broadcast();
+    });
+    document.addEventListener("m3-fx-ready", (e) => {
+      Object.assign(st, e.detail || {});
+      sync();
+    });
+    sync();
   })();
 </script>

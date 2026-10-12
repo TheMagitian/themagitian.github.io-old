@@ -45,6 +45,7 @@ function m3Apply(st) {
   root.setAttribute("data-m3-variant", st.variant);
   root.setAttribute("data-m3-dark", st.dark ? "1" : "0");
   try { localStorage.setItem(M3_KEY, JSON.stringify(st)); } catch (e) {}
+  try { for (var sk in st) m3State[sk] = st[sk]; } catch (e) {}
   return colors;
 }
 window.M3Theme = {
