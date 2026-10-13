@@ -2,48 +2,109 @@
 import Icon from "./Icon.astro";
 ---
 <div class="theme-dock" role="region" aria-label="Theme controls">
-  <div class="wrap theme-dock-inner">
-    <label class="dock-hue" title="Accent hue">
-      <button class="dock-reset" id="td-reset" type="button" aria-label="Reset theme to defaults" title="Reset theme">
+  <div class="dock" id="theme-dock">
+    <div class="dock-bar">
+      <button
+        id="td-dark"
+        type="button"
+        aria-pressed="false"
+        aria-label="Toggle dark theme"
+        title="Light / dark mode"
+      >
+        <span data-icon-dark><Icon name="dark-mode" /></span>
+        <span data-icon-light hidden><Icon name="light-mode" /></span>
+      </button>
+
+      <button
+        id="td-theme"
+        type="button"
+        aria-expanded="false"
+        aria-controls="td-theme-pane"
+        aria-label="Open theme picker"
+        title="Theme picker"
+      >
         <Icon name="palette" />
       </button>
-      <input
-        class="md-slider md-slider-hue dock-slider"
-        type="range"
-        id="td-hue"
-        min="0"
-        max="360"
-        step="1"
-        value="260"
-        aria-label="Accent hue"
-      />
-      <output id="td-hue-val" for="td-hue">260°</output>
-    </label>
-    <select id="td-variant" aria-label="Scheme variant">
-      <option value="tonalSpot">Tonal spot</option>
-      <option value="expressive">Expressive</option>
-      <option value="vibrant">Vibrant</option>
-      <option value="neutral">Neutral</option>
-      <option value="fidelity">Fidelity</option>
-      <option value="rainbow">Rainbow</option>
-      <option value="fruitSalad">Fruit salad</option>
-    </select>
-    <select id="td-fx" aria-label="Background animation" title="Background animation">
-      <option value="honeycomb">Honeycomb</option>
-      <option value="dots">Dot matrix</option>
-      <option value="shapes">M3 shapes</option>
-      <option value="circuit">Circuit traces</option>
-      <option value="off">No background</option>
-    </select>
-    <button class="dock-dark" id="td-cursor" type="button" aria-pressed="true" aria-label="Toggle the custom cursor" title="Custom cursor">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path fill="currentColor" d="M3 3l18 9-7 1.2L11 21z" />
-      </svg>
-    </button>
-    <button class="dock-dark" id="td-dark" type="button" aria-pressed="false" aria-label="Toggle dark theme">
-      <span data-icon-dark><Icon name="dark-mode" /></span>
-      <span data-icon-light hidden><Icon name="light-mode" /></span>
-    </button>
+
+      <button
+        id="td-fxbtn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="td-fx-pane"
+        aria-label="Open cursor and background effects"
+        title="Cursor and background effects"
+      >
+        <Icon name="star" />
+      </button>
+
+      <button
+        id="td-reset"
+        type="button"
+        aria-label="Reset theme to defaults"
+        title="Reset theme"
+      >
+        <Icon name="restart-alt" />
+      </button>
+    </div>
+
+    <div class="dock-panes">
+      <div class="dock-clip">
+        <div class="dock-pane" id="td-theme-pane" hidden>
+          <label class="dock-hue" for="td-hue" title="Accent hue">
+            <span class="dock-swatch" aria-hidden="true"></span>
+            <input
+              class="md-slider md-slider-hue dock-slider"
+              type="range"
+              id="td-hue"
+              min="0"
+              max="360"
+              step="1"
+              value="260"
+              aria-label="Accent hue"
+            />
+            <output id="td-hue-val" for="td-hue">260°</output>
+          </label>
+          <label class="dock-sel" title="Scheme variant">
+            <Icon name="tune" />
+            <select id="td-variant" aria-label="Scheme variant">
+              <option value="tonalSpot">Tonal spot</option>
+              <option value="expressive">Expressive</option>
+              <option value="vibrant">Vibrant</option>
+              <option value="neutral">Neutral</option>
+              <option value="fidelity">Fidelity</option>
+              <option value="rainbow">Rainbow</option>
+              <option value="fruitSalad">Fruit salad</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="dock-pane" id="td-fx-pane" hidden>
+          <button
+            id="td-cursor"
+            class="dock-pane-btn"
+            type="button"
+            aria-pressed="true"
+            aria-label="Toggle the custom cursor"
+            title="Custom cursor"
+          >
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M3 3l18 9-7 1.2L11 21z" />
+            </svg>
+            <span>Cursor</span>
+          </button>
+          <label class="dock-sel" title="Background animation">
+            <Icon name="star" />
+            <select id="td-fx" aria-label="Background animation">
+              <option value="honeycomb">Honeycomb</option>
+              <option value="dots">Dot matrix</option>
+              <option value="shapes">M3 shapes</option>
+              <option value="circuit">Circuit traces</option>
+              <option value="off">No background</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -132,5 +193,58 @@ import Icon from "./Icon.astro";
       sync();
     });
     sync();
+  })();
+</script>
+
+<script is:inline>
+  (() => {
+    const dock = document.getElementById("theme-dock");
+    const themeBtn = document.getElementById("td-theme");
+    const fxBtn = document.getElementById("td-fxbtn");
+    if (!dock || !themeBtn || !fxBtn) return;
+    const panes = {
+      theme: document.getElementById("td-theme-pane"),
+      fx: document.getElementById("td-fx-pane"),
+    };
+    const triggers = { theme: themeBtn, fx: fxBtn };
+    const canHover = window.matchMedia("(hover: hover)").matches;
+
+    let hideTimer = 0;
+    const apply = (name) => {
+      window.clearTimeout(hideTimer);
+      Object.entries(panes).forEach(([k, p]) => {
+        if (!p || k === name) return;
+        if (name) { p.hidden = true; return; } // switching panes: swap at once
+        if (!p.hidden) hideTimer = window.setTimeout(() => { p.hidden = true; }, 520);
+      });
+      if (name && panes[name]) panes[name].hidden = false;
+      Object.entries(triggers).forEach(([k, b]) => b.setAttribute("aria-expanded", String(k === name)));
+      dock.classList.toggle("is-open", !!name);
+    };
+    const open = (name) => { if (panes[name]) apply(name); };
+    const toggle = (name) => { apply(panes[name] && panes[name].hidden ? name : null); };
+    const close = () => apply(null);
+    const paneFocused = () => {
+      const a = document.activeElement;
+      return !!a && !!a.closest && !!a.closest(".dock-pane:not([hidden])");
+    };
+
+    Object.entries(triggers).forEach(([name, btn]) => {
+      btn.addEventListener("click", () => { canHover ? open(name) : toggle(name); });
+    });
+
+    if (canHover) {
+      Object.entries(triggers).forEach(([name, btn]) => {
+        btn.addEventListener("mouseenter", () => open(name));
+      });
+      dock.addEventListener("mouseleave", () => { if (!paneFocused()) close(); });
+    }
+
+    dock.addEventListener("focusout", () => {
+      requestAnimationFrame(() => {
+        if (!dock.contains(document.activeElement)) close();
+      });
+    });
+    dock.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   })();
 </script>

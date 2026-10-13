@@ -161,22 +161,29 @@ export function createHoneycomb() {
  * 2. Dot matrix - a grid of dots that ripples where the cursor is
  * ------------------------------------------------------------------------- */
 
-const RIPPLE_PERIOD = 1.6; // s per pointer ripple
-const RIPPLE_REACH = 360; // px
+const RIPPLE_PERIOD = 2.2; // s for a ring to travel from the pointer to the rim
+const RIPPLE_REACH = 470; // px - how far the wavefront travels
+const RIPPLE_PUSH = 6; // px max radial displacement of the dots
+const RIPPLE_RINGS = 3; // staggered rings, so the ripple flows without restarting
+const RIPPLE_IDLE = 1; // s of quiet before the ripple has died away
+const RIPPLE_TAIL = 0.35; // s of fade-out at the end of that quiet second
 
 export function createDots() {
-  let sp = 26;
+  let sp = 20;
   let cols = 0;
   let rows = 0;
+  let lastX = NaN;
+  let lastY = NaN;
+  let lastMove = -Infinity;
+  let energy = 0; // 1 while the pointer is moving, 0 once it has been still
 
   const emitters = [
-    { x: 0.22, y: 0.3, period: 3.2, phase: 0 },
-    { x: 0.78, y: 0.72, period: 3.9, phase: 1.5 },
+    { x: 0.22, y: 0.3, period: 3.4, phase: 0, push: 4 },
+    { x: 0.78, y: 0.72, period: 3.4, phase: 1.7, push: 4 },
   ];
 
   function resize(w, h) {
-    // Keep the dot count sane on huge screens by widening the grid.
-    sp = clampN(18, 46, Math.round(Math.sqrt((w * h) / 2400)));
+    sp = clampN(14, 40, Math.round(Math.sqrt((w * h) / 4800)));
     cols = Math.ceil(w / sp) + 1;
     rows = Math.ceil(h / sp) + 1;
   }
@@ -186,48 +193,89 @@ export function createDots() {
     const glow = new Path2D();
     const cold = new Path2D();
 
-    // Ripple trains: two out-of-phase rings chasing the pointer, plus two
-    // ambient ones that keep the grid alive when nobody is moving.
-    const trains = [];
-    if (ptr.active) {
-      trains.push({ x: ptr.x, y: ptr.y, r: ((t % RIPPLE_PERIOD) / RIPPLE_PERIOD) * RIPPLE_REACH, a: 0.55, width: 44 });
-      trains.push({
-        x: ptr.x,
-        y: ptr.y,
-        r: (((t + RIPPLE_PERIOD / 2) % RIPPLE_PERIOD) / RIPPLE_PERIOD) * RIPPLE_REACH,
-        a: 0.4,
-        width: 38,
-      });
+    if (ptr.active && (ptr.x !== lastX || ptr.y !== lastY)) {
+      lastX = ptr.x;
+      lastY = ptr.y;
+      lastMove = t;
     }
-    for (const e of emitters) {
-      const p = ((t + e.phase) % e.period) / e.period;
-      trains.push({ x: e.x * w, y: e.y * h, r: p * 460, a: (1 - p) * 0.3, width: 54 });
+    const idle = ptr.active ? t - lastMove : Infinity;
+    const target = clampN(0, 1, (RIPPLE_IDLE - idle) / RIPPLE_TAIL);
+    energy = target >= energy ? Math.min(target, energy + dt * 6) : target;
+
+    const sources = [];
+    if (energy > 0.002) {
+      if (ptr.active) {
+        const rings = [];
+        for (let k = 0; k < RIPPLE_RINGS; k++) {
+          const p = (t / RIPPLE_PERIOD + k / RIPPLE_RINGS) % 1;
+          const fade = Math.sin(Math.PI * p);
+          const width = 52 - k * 6;
+          rings.push({
+            r: p * RIPPLE_REACH,
+            a: 0.92 * fade * energy,
+            width,
+            edge: width * 2.6,
+            push: RIPPLE_PUSH * fade * energy * (1 - k * 0.22),
+          });
+        }
+        sources.push({ x: ptr.x, y: ptr.y, rings });
+      }
+      for (const e of emitters) {
+        const p = ((t + e.phase) % e.period) / e.period;
+        const fade = Math.sin(Math.PI * p); 
+        sources.push({
+          x: e.x * w,
+          y: e.y * h,
+          rings: [
+            { r: p * 560, a: 0.3 * fade * energy, width: 60, edge: 60 * 2.6, push: e.push * fade * energy },
+          ],
+        });
+      }
     }
 
     for (let j = 0; j < rows; j++) {
       const y = j * sp;
       for (let i = 0; i < cols; i++) {
         const x = i * sp;
-        // Slow ambient wave so the matrix never looks frozen.
-        let v = (0.5 + 0.5 * Math.sin(t * 0.5 + x * 0.013 - y * 0.019)) * 0.3;
-        for (const tr of trains) {
-          const d = Math.hypot(x - tr.x, y - tr.y);
-          const g = Math.exp(-((d - tr.r) * (d - tr.r)) / (2 * tr.width * tr.width));
-          v += g * tr.a;
+        let v = (0.5 + 0.5 * Math.sin(t * 0.5 + x * 0.013 - y * 0.019)) * 0.28;
+        let dx = 0;
+        let dy = 0;
+        for (const src of sources) {
+          const ox = x - src.x;
+          const oy = y - src.y;
+          const d = Math.sqrt(ox * ox + oy * oy) || 1;
+          for (const tr of src.rings) {
+            if (d - tr.r > tr.edge || tr.r - d > tr.edge) continue;
+            const q = d - tr.r;
+            const g = Math.exp(-(q * q) / (2 * tr.width * tr.width));
+            v += g * tr.a;
+            if (g > 0.03) {
+              const push = (g * tr.push) / d;
+              dx += ox * push;
+              dy += oy * push;
+            }
+          }
         }
         if (v > 1) v = 1;
-        const bucket = v > 0.8 ? glow : v > 0.45 ? hot : cold;
-        const r = v > 0.45 ? 1.1 + (v - 0.45) * 6.5 : 1.1;
-        bucket.moveTo(x + r, y); // detach so arcs do not chain into lines
-        bucket.arc(x, y, r, 0, TAU);
+        const m = Math.sqrt(dx * dx + dy * dy);
+        if (m > RIPPLE_PUSH) {
+          dx = (dx / m) * RIPPLE_PUSH;
+          dy = (dy / m) * RIPPLE_PUSH;
+        }
+        const xd = x + dx;
+        const yd = y + dy;
+        const bucket = v > 0.78 ? glow : v > 0.42 ? hot : cold;
+        const r = v > 0.42 ? 1.05 + (v - 0.42) * 5.2 : 1.05;
+        bucket.moveTo(xd + r, yd);
+        bucket.arc(xd, yd, r, 0, TAU);
       }
     }
 
-    ctx.fillStyle = rgba(pal.outlineVariant, 0.45);
+    ctx.fillStyle = rgba(pal.outlineVariant, 0.42);
     ctx.fill(cold);
-    ctx.fillStyle = rgba(pal.primary, 0.22);
+    ctx.fillStyle = rgba(pal.primary, 0.24);
     ctx.fill(hot);
-    ctx.fillStyle = rgba(pal.primary, 0.62);
+    ctx.fillStyle = rgba(pal.primary, 0.66);
     ctx.fill(glow);
   }
 
