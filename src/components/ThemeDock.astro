@@ -1,18 +1,18 @@
 ---
 import Icon from "./Icon.astro";
 ---
-<div class="theme-dock" role="region" aria-label="Theme controls">
+<div class="theme-dock" role="region" aria-label="Site controls">
   <div class="dock" id="theme-dock">
     <div class="dock-bar">
       <button
-        id="td-dark"
+        id="td-searchbtn"
         type="button"
-        aria-pressed="false"
-        aria-label="Toggle dark theme"
-        title="Light / dark mode"
+        aria-expanded="false"
+        aria-controls="td-search-pane"
+        aria-label="Search posts"
+        title="Search posts"
       >
-        <span data-icon-dark><Icon name="dark-mode" /></span>
-        <span data-icon-light hidden><Icon name="light-mode" /></span>
+        <Icon name="search" />
       </button>
 
       <button
@@ -20,8 +20,8 @@ import Icon from "./Icon.astro";
         type="button"
         aria-expanded="false"
         aria-controls="td-theme-pane"
-        aria-label="Open theme picker"
-        title="Theme picker"
+        aria-label="Open theme settings"
+        title="Theme settings"
       >
         <Icon name="palette" />
       </button>
@@ -36,20 +36,49 @@ import Icon from "./Icon.astro";
       >
         <Icon name="star" />
       </button>
-
-      <button
-        id="td-reset"
-        type="button"
-        aria-label="Reset theme to defaults"
-        title="Reset theme"
-      >
-        <Icon name="restart-alt" />
-      </button>
     </div>
 
     <div class="dock-panes">
       <div class="dock-clip">
-        <div class="dock-pane" id="td-theme-pane" hidden>
+        <div class="dock-pane dock-pane-stack" id="td-search-pane" hidden>
+          <input
+            id="td-search-input"
+            class="dock-search-input"
+            type="search"
+            placeholder="Search posts…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search posts"
+            aria-controls="td-search-results"
+          />
+          <div id="td-search-results" class="dock-search-results"></div>
+          <p id="td-search-status" class="dock-search-status" aria-live="polite"></p>
+        </div>
+
+        <div class="dock-pane dock-pane-grid" id="td-theme-pane" hidden>
+          <button
+            id="td-mode-toggle"
+            class="dock-pill"
+            type="button"
+            aria-pressed="false"
+            title="Light / dark mode"
+          >
+            <span class="dock-pill-box" aria-hidden="true">
+              <span data-icon-light><Icon name="light-mode" /></span>
+              <span data-icon-dark hidden><Icon name="dark-mode" /></span>
+            </span>
+            <span class="dock-pill-text">Light mode</span>
+          </button>
+          <button
+            id="td-reset"
+            class="dock-pill"
+            type="button"
+            aria-label="Reset theme to defaults"
+            title="Reset theme to defaults"
+          >
+            <span class="dock-pill-box" aria-hidden="true"><Icon name="restart-alt" /></span>
+            <span class="dock-pill-text">Reset</span>
+          </button>
           <label class="dock-hue" for="td-hue" title="Accent hue">
             <span class="dock-swatch" aria-hidden="true"></span>
             <input
@@ -75,6 +104,7 @@ import Icon from "./Icon.astro";
               <option value="rainbow">Rainbow</option>
               <option value="fruitSalad">Fruit salad</option>
             </select>
+            <Icon name="expand-more" class="dock-chev" />
           </label>
         </div>
 
@@ -101,6 +131,7 @@ import Icon from "./Icon.astro";
               <option value="circuit">Circuit traces</option>
               <option value="off">No background</option>
             </select>
+            <Icon name="expand-more" class="dock-chev" />
           </label>
         </div>
       </div>
@@ -113,17 +144,21 @@ import Icon from "./Icon.astro";
     const hue = document.getElementById("td-hue");
     const hueVal = document.getElementById("td-hue-val");
     const variant = document.getElementById("td-variant");
-    const darkBtn = document.getElementById("td-dark");
+    const modeBtn = document.getElementById("td-mode-toggle");
+    const modeText = modeBtn && modeBtn.querySelector(".dock-pill-text");
     const resetBtn = document.getElementById("td-reset");
-    if (!window.M3Theme || !hue || !variant || !darkBtn || !resetBtn) return;
+    if (!window.M3Theme || !hue || !variant || !modeBtn || !resetBtn) return;
     const st = window.M3Theme.state;
     let darkOn = !!st.dark;
     hue.value = String(st.hue);
     variant.value = st.variant;
+    // The toggle names and pictures the mode you are in ("Light mode" / sun,
+    // "Dark mode" / moon) and is pressed while the dark theme is on.
     const syncBtn = () => {
-      darkBtn.setAttribute("aria-pressed", String(darkOn));
-      darkBtn.querySelector("[data-icon-dark]").hidden = darkOn;
-      darkBtn.querySelector("[data-icon-light]").hidden = !darkOn;
+      modeBtn.setAttribute("aria-pressed", String(darkOn));
+      modeBtn.querySelector("[data-icon-dark]").hidden = !darkOn;
+      modeBtn.querySelector("[data-icon-light]").hidden = darkOn;
+      if (modeText) modeText.textContent = darkOn ? "Dark mode" : "Light mode";
     };
     const paint = () => {
       hueVal.textContent = hue.value + "°";
@@ -138,7 +173,7 @@ import Icon from "./Icon.astro";
     };
     hue.addEventListener("input", paint);
     variant.addEventListener("change", paint);
-    darkBtn.addEventListener("click", () => {
+    modeBtn.addEventListener("click", () => {
       darkOn = !darkOn;
       syncBtn();
       paint();
@@ -199,14 +234,16 @@ import Icon from "./Icon.astro";
 <script is:inline>
   (() => {
     const dock = document.getElementById("theme-dock");
+    const searchBtn = document.getElementById("td-searchbtn");
     const themeBtn = document.getElementById("td-theme");
     const fxBtn = document.getElementById("td-fxbtn");
-    if (!dock || !themeBtn || !fxBtn) return;
+    if (!dock || !searchBtn || !themeBtn || !fxBtn) return;
     const panes = {
+      search: document.getElementById("td-search-pane"),
       theme: document.getElementById("td-theme-pane"),
       fx: document.getElementById("td-fx-pane"),
     };
-    const triggers = { theme: themeBtn, fx: fxBtn };
+    const triggers = { search: searchBtn, theme: themeBtn, fx: fxBtn };
     const canHover = window.matchMedia("(hover: hover)").matches;
 
     let hideTimer = 0;
@@ -246,5 +283,90 @@ import Icon from "./Icon.astro";
       });
     });
     dock.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  })();
+</script>
+
+<script is:inline>
+  (() => {
+    const pane = document.getElementById("td-search-pane");
+    const input = document.getElementById("td-search-input");
+    const list = document.getElementById("td-search-results");
+    const status = document.getElementById("td-search-status");
+    if (!pane || !input || !list || !status) return;
+    const MAX = 6;
+    const esc = (s) =>
+      String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    let posts = null;
+    let loading = false;
+    let hits = [];
+    let active = -1;
+
+    // The index is fetched the first time the pane opens, then reused.
+    const load = () => {
+      if (posts || loading) return;
+      loading = true;
+      fetch("/search-index.json")
+        .then((r) => r.json())
+        .then((data) => {
+          posts = Array.isArray(data) ? data : [];
+          render();
+        })
+        .catch(() => {
+          status.textContent = "Search index failed to load.";
+        });
+    };
+
+    const paint = () => {
+      [...list.children].forEach((el, i) => el.classList.toggle("is-active", i === active));
+      const el = list.children[active];
+      if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+    };
+
+    const render = () => {
+      if (!posts) return;
+      const q = input.value.trim().toLowerCase();
+      const matched = q
+        ? posts.filter((p) => [p.title, p.description, (p.tags || []).join(" ")].join(" ").toLowerCase().includes(q))
+        : posts;
+      hits = matched.slice(0, MAX);
+      active = hits.length ? 0 : -1;
+      list.innerHTML = hits
+        .map(
+          (p, i) =>
+            `<a class="dock-search-result${i === 0 ? " is-active" : ""}" href="/blog/${esc(p.slug)}">` +
+            `<span class="dock-search-title">${esc(p.title)}</span>` +
+            `<span class="dock-search-date">${esc(p.pubDate)}</span></a>`
+        )
+        .join("");
+      list.hidden = !hits.length;
+      status.textContent = q
+        ? hits.length
+          ? `${hits.length} match${hits.length === 1 ? "" : "es"} · ↑↓ then Enter`
+          : "No matching posts"
+        : `${posts.length} post${posts.length === 1 ? "" : "s"} · ↑↓ then Enter`;
+    };
+
+    input.addEventListener("focus", load);
+    input.addEventListener("input", () => {
+      load();
+      render();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (!hits.length) return;
+        e.preventDefault();
+        active = (active + (e.key === "ArrowDown" ? 1 : -1) + hits.length) % hits.length;
+        paint();
+      } else if (e.key === "Enter") {
+        const hit = hits[active] || hits[0];
+        if (hit) {
+          e.preventDefault();
+          window.location.href = "/blog/" + hit.slug;
+        }
+      }
+    });
+    new MutationObserver(() => {
+      if (!pane.hidden) load();
+    }).observe(pane, { attributes: true, attributeFilter: ["hidden"] });
   })();
 </script>
